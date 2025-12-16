@@ -1,0 +1,26 @@
+@import './App.css';
+
+.user-component{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--color-dark-gray);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    span{
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-background-gray);
+    }
+
+    &.logged-in{
+        background-color: var(--color-green);
+    }
+}
