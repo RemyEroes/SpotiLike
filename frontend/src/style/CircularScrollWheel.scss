@@ -9,6 +9,7 @@
         width: 300vw;
         height: 300vw;
         left: -100vw;
+        top: -10vw;
         will-change: transform;
 
         .inner-media {
@@ -32,7 +33,7 @@
                 /* Aligning the media to its bottom */
                 will-change: transform;
 
-                pointer-events: auto; 
+                pointer-events: auto;
                 cursor: pointer;
 
             }
