@@ -32,9 +32,14 @@
                 object-position: 50% 100%;
                 /* Aligning the media to its bottom */
                 will-change: transform;
+                
+                /* Important pour que Framer puisse lire la taille correctement */
+                transform-origin: center center;
 
-                pointer-events: auto;
-                cursor: pointer;
+                &.active {
+                    pointer-events: auto;
+                    cursor: pointer;
+                }
 
             }
         }
