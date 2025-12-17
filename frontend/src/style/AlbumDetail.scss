@@ -125,13 +125,13 @@
                 img {
                     width: 30px;
                     height: 30px;
-                    margin-bottom: 5px;
+                    margin-bottom: 10px;
                 }
 
                 span {
                     color: white;
-                    font-size: 20px;
-                    font-weight: 700;
+                    font-size: 14px;
+                    font-weight: 600;
                     text-transform: uppercase;
                 }
             }
@@ -139,14 +139,17 @@
 
         h3 {
             color: white;
-            margin: 20px 0px;
+            margin: 30px 0px 15px 0px;
             font-size: 25px;
-            font-weight: 500;
+            font-weight: 800;
+
+            &:nth-of-type(2) {
+                color: var(--color-green);
+            }
         }
 
         p {
-            color: white;
-            opacity: 0.8;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 100;
             line-height: 160%;
             text-align: justify;
@@ -168,9 +171,10 @@
                 gap: 10px;
                 border-radius: 3px;
                 cursor: pointer;
+                color: white;
 
                 &:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
+                    background-color: #1fd35e21;
                 }
 
                 .title{

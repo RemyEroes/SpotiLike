@@ -23,7 +23,7 @@ function MenuComponent() {
       {showMenu && (
         <AnimatePresence>
           <motion.a
-            href="/profile"
+            href="/albums"
             initial={initialStyle}
             animate={animateStyle}
             exit={exitStyle}
@@ -31,7 +31,7 @@ function MenuComponent() {
           >Albums</motion.a>
 
           <motion.a
-            href="/profile"
+            href="/artists"
             initial={initialStyle}
             animate={animateStyle}
             exit={exitStyle}

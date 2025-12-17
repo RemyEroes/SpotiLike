@@ -155,6 +155,9 @@ function CircularScrollWheel() {
             rotation: currentVisualRotation
         });
 
+        // gerer animation page detail ici
+        localStorage.setItem("albumOnTransition", "true");
+
         // 3. Navigation
         // On navigue quasi instantanément. Grâce à AnimatePresence, 
         // ce composant restera monté le temps que l'autre arrive.
