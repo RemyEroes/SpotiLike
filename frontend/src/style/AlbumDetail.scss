@@ -1,0 +1,202 @@
+@import './App.css';
+
+
+.album-detail-container {
+    width: 100vw;
+    height: 100vh;
+
+    padding-top: max(100px, 7%);
+    padding-left: max(220px, 15%);
+    padding-right: 10%;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    gap: 100px;
+
+    .album-detail-left {
+
+        min-width: 500px;
+        width: 500px;
+        color: white;
+        display: block;
+
+        .album-detail-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+
+            h2 {
+                font-size: 40px;
+                font-weight: 800;
+                margin: 0;
+            }
+
+            h4 {
+                font-size: 15px;
+                font-weight: 200;
+            }
+        }
+
+        h3 {
+            margin: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 500;
+            padding-left: 10px;
+        }
+
+        img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        span{
+            color: white;
+            opacity: 0.6;
+            font-weight: 200;
+            font-size: 12px;
+            display: block;
+            margin-left: 10px;
+        }
+    }
+
+    .album-detail-right {
+        // background-color: green;
+        flex-grow: 1;
+        height: 100%;
+        overflow: hidden;
+
+        .album-detail-genres-container {
+            display: flex;
+            gap: 25px;
+            max-width: 100%;
+            overflow-x: scroll;
+
+            // cacher scrollbar  
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* Internet Explorer 10+ */
+            &::-webkit-scrollbar {
+                /* WebKit */
+                display: none;
+            }
+            
+
+            .album-detail-genre-item {
+                padding: 15px;
+                font-size: 14px;
+                font-weight: 300;
+                height: 70px;
+                aspect-ratio: 1/1;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+
+                background-color: rgb(81, 81, 81);
+
+                /* Remplace l'URL par le chemin de ton fichier SVG */
+                mask-image: url('/assets/album-shape.svg');
+                -webkit-mask-image: url('/assets/album-shape.svg');
+                /* Pour Safari/Chrome */
+
+                /* Pour que la forme remplisse bien le carré */
+                mask-size: contain;
+                -webkit-mask-size: contain;
+
+                /* Pour ne pas répéter la forme */
+                mask-repeat: no-repeat;
+                -webkit-mask-repeat: no-repeat;
+
+                /* Centrer la forme */
+                mask-position: center;
+                -webkit-mask-position: center;
+
+                cursor: pointer;
+
+
+                img {
+                    width: 30px;
+                    height: 30px;
+                    margin-bottom: 5px;
+                }
+
+                span {
+                    color: white;
+                    font-size: 20px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                }
+            }
+        }
+
+        h3 {
+            color: white;
+            margin: 20px 0px;
+            font-size: 25px;
+            font-weight: 500;
+        }
+
+        p {
+            color: white;
+            opacity: 0.8;
+            font-weight: 100;
+            line-height: 160%;
+            text-align: justify;
+        }
+
+
+        .album-detail-tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            .album-detail-track-item {
+                width: 100%;
+                padding: 7px 15px;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+
+                gap: 10px;
+                border-radius: 3px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+
+                .title{
+                    width: 40%;
+                }
+
+                span:last-child {
+                    margin-left: auto;
+                    font-variant-numeric: tabular-nums;
+                    /* Bonus: aligne bien les chiffres */
+                }
+
+                span:nth-child(2):not(:last-child) {
+                    opacity: 0.7;
+                    font-size: 0.9em;
+                    color: #ccc;
+                }
+            }
+
+            .track-separator {
+                height: 0.5px;
+                background-color: rgba(255, 255, 255, 0.1);
+                margin: 5px auto;
+                /* Raccourci pour margin top/bottom 5 et auto gauche/droite */
+                width: 90%;
+            }
+        }
+    }
+}

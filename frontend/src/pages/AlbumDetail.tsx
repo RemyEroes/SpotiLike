@@ -1,67 +1,7 @@
-// import { useParams } from 'react-router-dom';
-// import { motion } from 'framer-motion';
-
-
-
-// const mediasSrc = [
-//     "assets/medias/alive.png",
-//     "assets/medias/beatles.png",
-//     "assets/medias/civilisation.png",
-//     "assets/medias/da-funk.png",
-//     "assets/medias/la-fuite-en-avant.png",
-//     "assets/medias/pulsar.png",
-//     "assets/medias/random-access-memories.png",
-//     "assets/medias/alive.png",
-//     "assets/medias/beatles.png",
-//     "assets/medias/civilisation.png",
-//     "assets/medias/da-funk.png",
-//     "assets/medias/la-fuite-en-avant.png",
-//     "assets/medias/pulsar.png",
-//     "assets/medias/random-access-memories.png",
-//     "assets/medias/alive.png",
-//     "assets/medias/beatles.png",
-//     "assets/medias/civilisation.png",
-//     "assets/medias/random-access-memories.png",
-//     "assets/medias/alive.png",
-//     "assets/medias/beatles.png",
-//     "assets/medias/civilisation.png",
-//     "assets/medias/alive.png",
-//     "assets/medias/beatles.png",
-//     "assets/medias/civilisation.png",
-
-// ];
-// function AlbumDetail() {
-//     // CORRECTION ICI : on déstructure albumId au lieu de id
-//     const { albumId } = useParams();
-
-//     // On utilise albumId ici
-//     const albumIndex = parseInt(albumId || "0") % mediasSrc.length;
-//     const albumImg = mediasSrc[albumIndex];
-
-//     return (
-//         <div className="album-detail-page" style={{ padding: '40px', textAlign: 'center' }}>
-//             <div style={{ marginTop: '50px' }}>
-//                 <motion.img
-//                     src={`/${albumImg}`}
-//                     alt="Album cover"
-//                     style={{ width: '300px', height: '300px' }}
-//                     // IMPORTANT : Le layoutId doit correspondre à celui de la liste
-//                     layoutId={`album-cover-${albumId}`}
-//                     layout
-//                 />
-//             </div>
-//         </div>
-//     );
-// }
-
-// export default AlbumDetail;
-
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import '../style/AlbumDetail.scss';
 
-// On réimporte ou on déplace mediasSrc dans un fichier de config commun
-// pour éviter les désynchronisations.
 const mediasSrc = [
     "assets/medias/alive.png",
     "assets/medias/beatles.png",
@@ -94,49 +34,109 @@ function AlbumDetail() {
     const { albumId } = useParams();
     const navigate = useNavigate();
 
-    // Conversion sécurisée
     const indexParsed = parseInt(albumId || "0", 10);
-    // On s'assure de récupérer la bonne string
-    const albumImg = mediasSrc[indexParsed % 24]; // ou mediasSrc.length si importé
+    const albumImg = mediasSrc[indexParsed % 24];
 
     return (
+        <div className='album-detail-container'>
+            <div className='album-detail-left'>
+                <div className='album-detail-title'>
+                    <h2>Album Detail</h2>
+                    <h4>12/12/2025</h4>
+                </div>
 
-        <>
-            <div style={{ width: "100vw", height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <h3>Artist Name</h3>
+
                 <motion.img
-                    // Attention : src doit être identique à la liste.
-                    // Si dans la liste c'est "assets/...", ici aussi.
-                    // Si tu mets un "/" devant dans l'un, mets-le dans l'autre.
                     src={`/${albumImg}`}
                     alt="Album cover"
 
-                    style={{
-                        width: '400px', // Plus grand que dans la roue
-                        height: '400px',
-                        objectFit: 'contain',
-                        borderRadius: '12px'
-                    }}
-
-                    // Doit matcher EXACTEMENT celui généré dans la liste
                     layoutId={`album-cover-${albumId}`}
                     layout
 
                     transition={{
                         duration: 0.6,
-                        ease: [0.43, 0.13, 0.23, 0.96]
+                        ease: [0.34, 1.56, 0.64, 1]
                     }}
                 />
+                <span className='album-detail-copyright'>© 2025 SpotiLike. All rights reserved.</span>
             </div>
-
-            <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                style={{ color: 'white', marginTop: '20px' }}
-            >
-                Album {albumId}
-            </motion.h1>
-        </>
+            <div className='album-detail-right'>
+                <div className='album-detail-genres-container'>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                    <div className='album-detail-genre-item'>
+                        <img src="/assets/genres/rock.svg" alt="Rock" />
+                        <span>Rock</span>
+                    </div>
+                </div>
+                <h3>About this album</h3>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+                <h3>Tracks</h3>
+                <div className='album-detail-tracks-container'>
+                    <div className='album-detail-track-item'>
+                        <span className='title'>Track One</span>
+                        <span>3:45</span>
+                    </div>
+                    <div className='track-separator'/>
+                    <div className='album-detail-track-item'>
+                        <span className='title'>Track Two</span>
+                        <span>feat: artist, artist</span>
+                        <span>4:20</span>
+                    </div>
+                    <div className='track-separator'/>
+                    <div className='album-detail-track-item'>
+                        <span className='title'>Track Three</span>
+                        <span>feat: artist</span>
+                        <span>5:10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 
