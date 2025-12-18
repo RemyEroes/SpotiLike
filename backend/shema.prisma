@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // ou mysql / sqlite selon ton cas
+  url      = env("DATABASE_URL")
+}
+
+model Album {
+  id_album     String   @id @db.VarChar(42)
+  title        String?  @db.VarChar(42)
+  release_date String?  @db.VarChar(42)
+  cover_art    String?  @db.VarChar(42)
+
+  tracks   Contains[]
+  artists  Creates[]
+  pictures Picture[]
+}
+
+model Artist {
+  id_artist     String   @id @db.VarChar(42)
+  name          String?  @db.VarChar(42)
+  avatar        String?  @db.VarChar(42)
+  biography     String?  @db.VarChar(42)
+  date_of_birth String?  @db.VarChar(42)
+
+  albums   Creates[]
+  tracks   Performs[]
+  pictures Picture[]
+}
+
+model Track {
+  id_track String  @id @db.VarChar(42)
+  title    String? @db.VarChar(42)
+  duration String? @db.VarChar(42)
+
+  albums   Contains[]
+  artists  Performs[]
+  genres   Classifies[]
+  pictures Picture[]
+}
+
+model Genre {
+  id_genre    String  @id @db.VarChar(42)
+  title       String? @db.VarChar(42)
+  description String? @db.VarChar(42)
+
+  tracks Classifies[]
+}
+
+model User {
+  id_user  String  @id @db.VarChar(42)
+  username String? @db.VarChar(42)
+  email    String? @db.VarChar(42)
+  password String? @db.VarChar(42)
+}
+
+/* ===== TABLES DE JOINTURE ===== */
+
+model Contains {
+  id_album String @db.VarChar(42)
+  id_track String @db.VarChar(42)
+
+  album Album @relation(fields: [id_album], references: [id_album])
+  track Track @relation(fields: [id_track], references: [id_track])
+
+  @@id([id_album, id_track])
+}
+
+model Creates {
+  id_artist String @db.VarChar(42)
+  id_album  String @db.VarChar(42)
+
+  artist Artist @relation(fields: [id_artist], references: [id_artist])
+  album  Album  @relation(fields: [id_album], references: [id_album])
+
+  @@id([id_artist, id_album])
+}
+
+model Performs {
+  id_artist      String @db.VarChar(42)
+  id_track       String @db.VarChar(42)
+  is_main_artist String? @db.VarChar(42)
+
+  artist Artist @relation(fields: [id_artist], references: [id_artist])
+  track  Track  @relation(fields: [id_track], references: [id_track])
+
+  @@id([id_artist, id_track])
+}
+
+model Classifies {
+  id_genre String @db.VarChar(42)
+  id_track String @db.VarChar(42)
+
+  genre Genre @relation(fields: [id_genre], references: [id_genre])
+  track Track @relation(fields: [id_track], references: [id_track])
+
+  @@id([id_genre, id_track])
+}
+
+model Picture {
+  id_picture String  @id @db.VarChar(42)
+  filename   String? @db.VarChar(42)
+  label      String? @db.VarChar(42)
+
+  id_track  String @db.VarChar(42)
+  id_album  String @db.VarChar(42)
+  id_artist String @db.VarChar(42)
+
+  track  Track  @relation(fields: [id_track], references: [id_track])
+  album  Album  @relation(fields: [id_album], references: [id_album])
+  artist Artist @relation(fields: [id_artist], references: [id_artist])
+
+  @@unique([id_album])
+  @@unique([id_artist])
+}
