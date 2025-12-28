@@ -1,0 +1,12 @@
+@import './colors.css';
+
+.player{
+    background-color: var(--color-green);
+    position: fixed;
+    bottom: 3%;
+    width: 45%;
+    left: 5%;
+    height: 50px;
+    border-radius: 100px;
+    cursor: pointer;
+}

@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import MenuComponent from './components/Menu/MenuComponent'
 import UserComponent from './components/User/UserComponent'
+import Player from "./components/Player/Player";
 import AlbumList from './pages/AlbumList'
 import AlbumDetail from './pages/AlbumDetail'
 import './style/App.css'
@@ -15,6 +16,7 @@ function App() {
     <>
       <MenuComponent />
       <UserComponent />
+      <Player />
       <motion.div
         layout
         layoutId="light"

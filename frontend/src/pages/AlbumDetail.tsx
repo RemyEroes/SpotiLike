@@ -142,6 +142,7 @@ function AlbumDetail() {
 
     return (
         <div className='album-detail-container'>
+            <button className='back-button' onClick={() => { navigate(-1) }}>BACK</button>
             <div className='album-detail-left'>
                 <div className='album-detail-title'>
                     <motion.h2

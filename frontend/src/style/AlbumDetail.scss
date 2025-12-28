@@ -15,6 +15,51 @@
     align-items: start;
     gap: 100px;
 
+    .back-button {
+        position: fixed;
+        top: 50%;
+        left: 0px;
+        transform: translateY(-50%) rotate(-90deg);
+        font-family: Spotify Mix, Avenir, Helvetica, Arial, sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &::after {
+            content: 'BACK';
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0;
+            color: var(--color-green);
+            transition: all 0.3s ease;
+        }
+
+        &:hover {
+            color: rgba(255, 255, 255, 1);
+
+            &::after {
+                top: 5px;
+                z-index: -1;
+                opacity: 1;
+            }
+        }
+
+        &:active {
+            transition: all 0.2s ease;
+            scale: 0.98;
+        }
+
+
+    }
+
     .album-detail-left {
 
         min-width: 500px;
@@ -80,6 +125,7 @@
             // cacher scrollbar  
             scrollbar-width: none;
             -ms-overflow-style: none;
+
             &::-webkit-scrollbar {
                 display: none;
             }
@@ -92,7 +138,7 @@
                 width: 30px;
                 height: 100px;
                 pointer-events: none;
-                background: linear-gradient(90deg, rgba(36, 36, 36, 0) 0%, rgb(36, 36, 36) 100%);    
+                background: linear-gradient(90deg, rgba(36, 36, 36, 0) 0%, rgb(36, 36, 36) 100%);
             }
 
 
@@ -152,7 +198,8 @@
 
             // cacher scrollbar
             scrollbar-width: none;
-            -ms-overflow-style: none;   
+            -ms-overflow-style: none;
+
             &::-webkit-scrollbar {
                 display: none;
             }
@@ -166,7 +213,7 @@
                 height: 30px;
                 pointer-events: none;
                 background-color: red;
-                background: linear-gradient(0deg, rgb(36, 36, 36), rgba(36, 36, 36, 0));    
+                background: linear-gradient(0deg, rgb(36, 36, 36), rgba(36, 36, 36, 0));
             }
 
             h3 {
