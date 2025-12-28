@@ -3,7 +3,7 @@ import CircularScrollWheel from '../components/CircularScrollWheel/CircularScrol
 
 function AlbumList() {
   return (
-    <CircularScrollWheel />
+      <CircularScrollWheel />
   )
 }
 

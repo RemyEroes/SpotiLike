@@ -55,7 +55,7 @@
             border-radius: 12px;
         }
 
-        span{
+        span {
             color: white;
             opacity: 0.6;
             font-weight: 200;
@@ -79,14 +79,22 @@
 
             // cacher scrollbar  
             scrollbar-width: none;
-            /* Firefox */
             -ms-overflow-style: none;
-            /* Internet Explorer 10+ */
             &::-webkit-scrollbar {
-                /* WebKit */
                 display: none;
             }
-            
+
+            //degradé pour indiquer qu'on peut scroller
+            &::after {
+                content: "";
+                position: absolute;
+                right: 10%;
+                width: 30px;
+                height: 100px;
+                pointer-events: none;
+                background: linear-gradient(90deg, rgba(36, 36, 36, 0) 0%, rgb(36, 36, 36) 100%);    
+            }
+
 
             .album-detail-genre-item {
                 padding: 15px;
@@ -137,69 +145,99 @@
             }
         }
 
-        h3 {
-            color: white;
-            margin: 30px 0px 15px 0px;
-            font-size: 25px;
-            font-weight: 800;
+        .album-detail-right-scroll-section {
+            height: calc(100vh - max(100px, 7%) - 100px - 40px);
+            margin-top: 15px;
+            overflow-y: scroll;
 
-            &:nth-of-type(2) {
-                color: var(--color-green);
+            // cacher scrollbar
+            scrollbar-width: none;
+            -ms-overflow-style: none;   
+            &::-webkit-scrollbar {
+                display: none;
             }
-        }
 
-        p {
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 100;
-            line-height: 160%;
-            text-align: justify;
-        }
+            &::after {
+                // Ajouter un dégradé en bas pour indiquer qu'on peut scroller
+                content: "";
+                position: fixed;
+                bottom: 10px;
+                width: 50%;
+                height: 30px;
+                pointer-events: none;
+                background-color: red;
+                background: linear-gradient(0deg, rgb(36, 36, 36), rgba(36, 36, 36, 0));    
+            }
 
-
-        .album-detail-tracks-container {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-
-            .album-detail-track-item {
-                width: 100%;
-                padding: 7px 15px;
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-
-                gap: 10px;
-                border-radius: 3px;
-                cursor: pointer;
+            h3 {
                 color: white;
+                margin: 15px 0px 15px 0px;
+                font-size: 25px;
+                font-weight: 800;
 
-                &:hover {
-                    background-color: #1fd35e21;
-                }
-
-                .title{
-                    width: 40%;
-                }
-
-                span:last-child {
-                    margin-left: auto;
-                    font-variant-numeric: tabular-nums;
-                    /* Bonus: aligne bien les chiffres */
-                }
-
-                span:nth-child(2):not(:last-child) {
-                    opacity: 0.7;
-                    font-size: 0.9em;
-                    color: #ccc;
+                // position: sticky;
+                // top: 0;
+                // background-color: var(--color-background-gray);
+                // background: linear-gradient(0deg, rgba(36, 36, 36, 0) 0%, rgba(36, 36, 36, 0.7) 5%, rgb(36, 36, 36,0.9) 15%, rgb(36, 36, 36) 20%, rgb(36, 36, 36) 100%);
+                &:nth-of-type(2) {
+                    color: var(--color-green);
                 }
             }
 
-            .track-separator {
-                height: 0.5px;
-                background-color: rgba(255, 255, 255, 0.1);
-                margin: 5px auto;
-                /* Raccourci pour margin top/bottom 5 et auto gauche/droite */
-                width: 90%;
+            p {
+                color: rgba(255, 255, 255, 0.7);
+                font-weight: 100;
+                line-height: 160%;
+                text-align: justify;
+            }
+
+
+            .album-detail-tracks-container {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+
+
+                .album-detail-track-item {
+                    width: 100%;
+                    padding: 7px 15px;
+                    box-sizing: border-box;
+                    display: flex;
+                    align-items: center;
+
+                    gap: 10px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    color: white;
+
+                    &:hover {
+                        background-color: #1fd35e21;
+                    }
+
+                    .title {
+                        width: 40%;
+                    }
+
+                    span:last-child {
+                        margin-left: auto;
+                        font-variant-numeric: tabular-nums;
+                        /* Bonus: aligne bien les chiffres */
+                    }
+
+                    span:nth-child(2):not(:last-child) {
+                        opacity: 0.7;
+                        font-size: 0.9em;
+                        color: #ccc;
+                    }
+                }
+
+                .track-separator {
+                    height: 0.5px;
+                    background-color: rgba(255, 255, 255, 0.1);
+                    margin: 5px auto;
+                    /* Raccourci pour margin top/bottom 5 et auto gauche/droite */
+                    width: 90%;
+                }
             }
         }
     }

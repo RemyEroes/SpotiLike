@@ -99,7 +99,7 @@ function AlbumDetail() {
             y: 0,
             rotateZ: 0,
             transition: {
-                duration: 0.3,
+                duration: 0.5,
                 delay: 0.5 + (index * 0.05),
                 ease: [0.215, 0.61, 0.335, 1]
             }
@@ -134,7 +134,7 @@ function AlbumDetail() {
             scaleX: 1,
             transition: {
                 duration: 0.3,
-                delay: 1 + (index * 0.05) + 0.05 ,
+                delay: 1 + (index * 0.05) + 0.05,
                 ease: [0.215, 0.61, 0.335, 1]
             }
         })
@@ -198,6 +198,7 @@ function AlbumDetail() {
                                 variants={album_genre_item_variants}
                                 animate="enter"
                                 initial="initial"
+                                whileHover={{ scale: 0.9, rotate: (randomRotations[index]/2) }}
                             >
                                 <img src={genre.src} alt={genre.name} />
                                 <span>{genre.name}</span>
@@ -205,47 +206,49 @@ function AlbumDetail() {
                         )
                     })}
                 </div>
-                <motion.h3
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.5 }}
-                >About this album</motion.h3>
-                <motion.p
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.6 }}
-                >
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </motion.p>
-                <motion.h3
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.7 }}
-                >Tracks</motion.h3>
-                <div className='album-detail-tracks-container'>
-                    {trackList.map((track, index) => (
-                        <React.Fragment key={index}>
-                            <motion.div
-                                className='album-detail-track-item'
-                                custom={index}
-                                variants={track_variants}
-                                initial="initial"
-                                animate="enter"
-                            >
-                                <span className='title'>{track.title}</span>
-                                {track.feat && <span>feat: {track.feat}</span>}
-                                <span>{track.duration}</span>
-                            </motion.div>
-                            {index < trackList.length - 1 && <motion.div
-                                className='track-separator'
-                                custom={index}
-                                variants={track_separator_variants}
-                                initial="initial"
-                                animate="enter"
-                            />}
-                        </React.Fragment>
-                    ))}
-                </div>
+                <section className='album-detail-right-scroll-section' >
+                    <motion.h3
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.5 }}
+                    >About this album</motion.h3>
+                    <motion.p
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.6 }}
+                    >
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </motion.p>
+                    <motion.h3
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.7 }}
+                    >Tracks</motion.h3>
+                    <div className='album-detail-tracks-container'>
+                        {trackList.map((track, index) => (
+                            <React.Fragment key={index}>
+                                <motion.div
+                                    className='album-detail-track-item'
+                                    custom={index}
+                                    variants={track_variants}
+                                    initial="initial"
+                                    animate="enter"
+                                >
+                                    <span className='title'>{track.title}</span>
+                                    {track.feat && <span>feat: {track.feat}</span>}
+                                    <span>{track.duration}</span>
+                                </motion.div>
+                                {index < trackList.length - 1 && <motion.div
+                                    className='track-separator'
+                                    custom={index}
+                                    variants={track_separator_variants}
+                                    initial="initial"
+                                    animate="enter"
+                                />}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </section>
             </div>
         </div>
     );
