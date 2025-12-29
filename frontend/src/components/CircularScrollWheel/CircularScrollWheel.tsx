@@ -46,7 +46,7 @@ function CircularScrollWheel() {
 
     const [transitionModel, setTransitionModel] = useState<TransitionModel | null>(null);
 
-    // --- SETUP GSAP (Inchangé) ---
+
     useEffect(() => {
         if (!containerRef.current) return;
         const container = containerRef.current;
@@ -177,14 +177,49 @@ function CircularScrollWheel() {
             <motion.div
                 className="container"
                 ref={containerRef}
-                exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                exit={{ opacity: 0, transition: { duration: 0.3, delay: 0.4 } }}
             >
-                {mediasSrc.map((src, index) => {
+                {mediasSrc.map((src, index, arr) => {
+                    const length = arr.length;
                     const isTransitioning = transitionModel?.index === index;
+
+                    let delayAnimate = 0;
+                    let delayExit = 0;
+
+                    switch (true) {
+                        case index === 0:
+                            delayAnimate = 0.1;
+                            break;
+                        case index === 1:
+                            delayAnimate = 0.2;
+                            delayExit = 0.3;
+                            break;
+                        case index === 2:
+                            delayAnimate = 0.3;
+                            delayExit = 0.2;
+                            break;
+                        case index === 3:
+                            delayAnimate = 0.4;
+                            delayExit = 0.1;
+                            break;
+                        case index === length - 1:
+                            delayAnimate = 0.2;
+                            delayExit = 0.4;
+                            break;
+                        case index === length - 2:
+                            delayAnimate = 0.3;
+                            delayExit = 0.3;
+                            break;
+                        case index === length - 3:
+                            delayAnimate = 0.4;
+                            delayExit = 0.2;
+                            break;
+                    }
+
                     return (
-                        <div className="group" key={index}>
+                        <div className="group" key={index} >
                             <div className="inner-media">
-                                <img
+                                <motion.img
                                     className={`media ${centerIndex === index ? 'active' : ''}`}
                                     src={src}
                                     alt={`Album ${index}`}
@@ -195,6 +230,9 @@ function CircularScrollWheel() {
                                         transition: 'opacity 0.2s',
                                         cursor: 'pointer'
                                     }}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.43, 0.13, 0.23, 0.96], delay: delayAnimate } }}
+                                    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3, delay: delayExit } }}
                                 />
                             </div>
                         </div>
