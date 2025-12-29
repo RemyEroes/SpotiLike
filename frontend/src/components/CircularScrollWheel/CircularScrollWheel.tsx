@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import "../../style/CircularScrollWheel.scss";
 import { useNavigate } from "react-router-dom";
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const mediasSrc = [
     "assets/medias/alive.png",
@@ -46,6 +46,8 @@ function CircularScrollWheel() {
 
     const [transitionModel, setTransitionModel] = useState<TransitionModel | null>(null);
 
+    const [showTitle, setShowTitle] = useState(true);
+
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -86,6 +88,8 @@ function CircularScrollWheel() {
             const currentRot = rotationRef.current;
             const snapRot = Math.round(currentRot / anglePerItem) * anglePerItem;
 
+            setShowTitle(true);
+
             gsap.to(container, {
                 rotation: snapRot,
                 duration: 0.5,
@@ -104,6 +108,8 @@ function CircularScrollWheel() {
         const onWheel = (e: WheelEvent) => {
             // Si on est en train de transitionner, on bloque le scroll
             if (transitionModel) return;
+
+            setShowTitle(false);
 
             rotationRef.current -= e.deltaY / 20;
             rotTo(rotationRef.current);
@@ -127,6 +133,8 @@ function CircularScrollWheel() {
     // --- GESTION DU CLIC ---
     const handleImageClick = (e: React.MouseEvent<HTMLImageElement>, globalIndex: number) => {
         if (transitionModel) return;
+
+        setShowTitle(false);
 
         // 1. On fige GSAP
         if (containerRef.current) gsap.killTweensOf(containerRef.current);
@@ -170,6 +178,39 @@ function CircularScrollWheel() {
 
     return (
         <section className="circular-scroll-wheel">
+            <AnimatePresence>
+                {showTitle && (
+                    <>
+                        <div className="album-title-container">
+                            <div className="album-title">
+                                <motion.h2
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
+                                    transition={{ type: 'spring', stiffness: 100, delay: 0.3 }}
+                                >Album Detail</motion.h2>
+
+                                <motion.h3
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
+                                    transition={{ type: 'spring', stiffness: 100, delay: 0.3 }}>
+                                    Artist Name
+                                </motion.h3>
+                            </div>
+                        </div>
+                        <motion.img
+                            src="assets/icons/selector.svg"
+                            alt=""
+                            className="selector-indicator"
+                            initial={{ opacity: 0, y: 10, x: '-50%' }}
+                            animate={{ opacity: 0.2, y: '13%', x: '-50%' }}
+                            exit={{ opacity: 0, y: 10, x: '-50%', transition: { duration: 0.2 } }}
+                            transition={{ type: 'spring', stiffness: 100, delay: 0.3 }}
+                        />
+                    </>
+                )}
+            </AnimatePresence>
             {/* IMPORTANT: 
                On ajoute un exit opacity: 0 au conteneur GLOBAL de la roue 
                pour que tout disparaisse sauf l'image layoutId lors de la navigation 
