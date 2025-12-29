@@ -1,0 +1,88 @@
+@import './App.css';
+
+
+.circular-scroll-wheel {
+    height: 100vh;
+
+    .album-title-container {
+        position: fixed;
+        top: 20%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+
+        .album-title {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            justify-content: center;
+
+            h2 {
+                font-size: 80px;
+                font-weight: 800;
+                margin: 0;
+            }
+
+            h3 {
+                margin: 0;
+                margin-top: -10px;
+                margin-bottom: 20px;
+                font-size: 20px;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .selector-indicator{
+        height: 40px;
+        width: fit-content;
+        position: fixed;
+        bottom: 13%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+    .container {
+        position: absolute;
+        width: 300vw;
+        height: 300vw;
+        left: -100vw;
+        top: -10vw;
+        will-change: transform;
+
+        .inner-media {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            /* To position the child image */
+            justify-content: center;
+            /* The child image will be centered horizontally */
+            pointer-events: none;
+
+            .media {
+                width: 20vw;
+                height: 26vw;
+                margin: 50vh 0 0;
+                object-fit: contain;
+                object-position: 50% 100%;
+                /* Aligning the media to its bottom */
+                will-change: transform;
+
+                /* Important pour que Framer puisse lire la taille correctement */
+                transform-origin: center center;
+
+                &.active {
+                    pointer-events: auto;
+                    cursor: pointer;
+                }
+
+            }
+        }
+
+    }
+}

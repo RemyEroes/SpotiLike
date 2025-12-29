@@ -1,0 +1,66 @@
+@import './colors.css';
+
+.player{
+    background-color: var(--color-green);
+    position: fixed;
+
+    width: 45%;
+    height: 50px;
+    border-radius: 100px;
+    z-index: 1000;
+    cursor: pointer;
+    display: flex;
+    justify-content: start;
+    gap: 20px;
+    align-items: center;
+
+    padding: 0 20px;
+    box-sizing: border-box;
+
+    .play-pause-button{
+        height: 90%;
+        aspect-ratio: 1/1;
+
+        border-radius: 10px;
+        border: none;
+        background-color: transparent;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+
+        img{
+            height: 80%;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+
+            &#pause-icon{
+                height: 75%;
+            }
+        }
+
+    }
+
+    .player-track-info{
+        display: flex;
+        flex-grow: 1;
+    }
+
+    .player-buttons{
+        height: 90%;
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        gap: 15px;
+
+        img{
+            height: 60%;
+            object-fit: contain;
+
+            &#player-close{
+                height: 40%;
+            }
+        }
+    }
+}

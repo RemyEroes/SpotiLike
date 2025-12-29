@@ -1,0 +1,59 @@
+@import './App.css';
+
+nav {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  min-width: 100px;
+  width: fit-content;
+
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  cursor: pointer;
+  z-index: 1000;
+
+  .logo {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    gap: 10px;
+    height: 30px;
+
+    img {
+      width: 30px;
+      height: 30px;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      color: var(--color-green);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  }
+
+  a{
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    padding-left: 20px ;
+    margin: 10px;
+    gap: 5px;
+    height: 30px;
+
+    font-size: 1.5em;
+    font-weight: 600;
+    text-decoration: none;
+
+    color: #919191;
+    border-radius: 15px;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}

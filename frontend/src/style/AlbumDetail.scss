@@ -1,0 +1,291 @@
+@import './App.css';
+
+
+.album-detail-container {
+    width: 100vw;
+    height: 100vh;
+
+    padding-top: max(100px, 7%);
+    padding-left: max(220px, 15%);
+    padding-right: 10%;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    gap: 100px;
+
+    .back-button {
+        position: fixed;
+        top: 50%;
+        left: 0px;
+        transform: translateY(-50%) rotate(-90deg);
+        font-family: Spotify Mix, Avenir, Helvetica, Arial, sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &::after {
+            content: 'BACK';
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0;
+            color: var(--color-green);
+            transition: all 0.3s ease;
+        }
+
+        &:hover {
+            color: rgba(255, 255, 255, 1);
+
+            &::after {
+                top: 5px;
+                z-index: -1;
+                opacity: 1;
+            }
+        }
+
+        &:active {
+            transition: all 0.2s ease;
+            scale: 0.98;
+        }
+
+
+    }
+
+    .album-detail-left {
+
+        min-width: 500px;
+        width: 500px;
+        color: white;
+        display: block;
+
+        .album-detail-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+
+            h2 {
+                font-size: 40px;
+                font-weight: 800;
+                margin: 0;
+            }
+
+            h4 {
+                font-size: 15px;
+                font-weight: 200;
+            }
+        }
+
+        h3 {
+            margin: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 500;
+            padding-left: 10px;
+        }
+
+        img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        span {
+            color: white;
+            opacity: 0.6;
+            font-weight: 200;
+            font-size: 12px;
+            display: block;
+            margin-left: 10px;
+        }
+    }
+
+    .album-detail-right {
+        // background-color: green;
+        flex-grow: 1;
+        height: 100%;
+        overflow: hidden;
+
+        .album-detail-genres-container {
+            display: flex;
+            gap: 25px;
+            max-width: 100%;
+            overflow-x: scroll;
+
+            // cacher scrollbar  
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            //degradé pour indiquer qu'on peut scroller
+            &::after {
+                content: "";
+                position: absolute;
+                right: 10%;
+                width: 30px;
+                height: 100px;
+                pointer-events: none;
+                background: linear-gradient(90deg, rgba(36, 36, 36, 0) 0%, rgb(36, 36, 36) 100%);
+            }
+
+
+            .album-detail-genre-item {
+                padding: 15px;
+                font-size: 14px;
+                font-weight: 300;
+                height: 70px;
+                aspect-ratio: 1/1;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+
+                background-color: rgb(81, 81, 81);
+
+                /* Remplace l'URL par le chemin de ton fichier SVG */
+                mask-image: url('/assets/album-shape.svg');
+                -webkit-mask-image: url('/assets/album-shape.svg');
+                /* Pour Safari/Chrome */
+
+                /* Pour que la forme remplisse bien le carré */
+                mask-size: contain;
+                -webkit-mask-size: contain;
+
+                /* Pour ne pas répéter la forme */
+                mask-repeat: no-repeat;
+                -webkit-mask-repeat: no-repeat;
+
+                /* Centrer la forme */
+                mask-position: center;
+                -webkit-mask-position: center;
+
+                cursor: pointer;
+
+
+                img {
+                    width: 30px;
+                    height: 30px;
+                    margin-bottom: 10px;
+                }
+
+                span {
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+            }
+        }
+
+        .album-detail-right-scroll-section {
+            height: calc(100vh - max(100px, 7%) - 100px - 40px);
+            margin-top: 15px;
+            overflow-y: scroll;
+
+            // cacher scrollbar
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            &::after {
+                // Ajouter un dégradé en bas pour indiquer qu'on peut scroller
+                content: "";
+                position: fixed;
+                bottom: 10px;
+                width: 50%;
+                height: 30px;
+                pointer-events: none;
+                background-color: red;
+                background: linear-gradient(0deg, rgb(36, 36, 36), rgba(36, 36, 36, 0));
+            }
+
+            h3 {
+                color: white;
+                margin: 15px 0px 15px 0px;
+                font-size: 25px;
+                font-weight: 800;
+
+                // position: sticky;
+                // top: 0;
+                // background-color: var(--color-background-gray);
+                // background: linear-gradient(0deg, rgba(36, 36, 36, 0) 0%, rgba(36, 36, 36, 0.7) 5%, rgb(36, 36, 36,0.9) 15%, rgb(36, 36, 36) 20%, rgb(36, 36, 36) 100%);
+                &:nth-of-type(2) {
+                    color: var(--color-green);
+                }
+            }
+
+            p {
+                color: rgba(255, 255, 255, 0.7);
+                font-weight: 100;
+                line-height: 160%;
+                text-align: justify;
+            }
+
+
+            .album-detail-tracks-container {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+
+
+                .album-detail-track-item {
+                    width: 100%;
+                    padding: 7px 15px;
+                    box-sizing: border-box;
+                    display: flex;
+                    align-items: center;
+
+                    gap: 10px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    color: white;
+
+                    &:hover {
+                        background-color: #1fd35e21;
+                    }
+
+                    .title {
+                        width: 40%;
+                    }
+
+                    span:last-child {
+                        margin-left: auto;
+                        font-variant-numeric: tabular-nums;
+                        /* Bonus: aligne bien les chiffres */
+                    }
+
+                    span:nth-child(2):not(:last-child) {
+                        opacity: 0.7;
+                        font-size: 0.9em;
+                        color: #ccc;
+                    }
+                }
+
+                .track-separator {
+                    height: 0.5px;
+                    background-color: rgba(255, 255, 255, 0.1);
+                    margin: 5px auto;
+                    /* Raccourci pour margin top/bottom 5 et auto gauche/droite */
+                    width: 90%;
+                }
+            }
+        }
+    }
+}
