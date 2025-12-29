@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
-import React, { useMemo } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
+import { PlayerContext } from '../context/PlayerContext';
 
 const mediasSrc = [
     "assets/medias/alive.png",
@@ -77,6 +78,7 @@ type Track = {
 function AlbumDetail() {
     const { albumId } = useParams();
     const navigate = useNavigate();
+    const { setPosition } = useContext(PlayerContext);
 
     const indexParsed = parseInt(albumId || "0", 10);
     const albumImg = mediasSrc[indexParsed % 24];
@@ -138,6 +140,19 @@ function AlbumDetail() {
                 ease: [0.215, 0.61, 0.335, 1]
             }
         })
+    }
+
+    useEffect(() => {
+        setPosition('left');
+    }, []);
+
+    const { setCurrentTrack, setIsPlaying } = useContext(PlayerContext);
+    
+    const changeTrack = (trackTitle: string) => {
+        localStorage.setItem('player-currentTrack', trackTitle);
+        localStorage.setItem('player-isPlaying', 'true');
+        setCurrentTrack(trackTitle);
+        setIsPlaying(true);
     }
 
     return (
@@ -234,6 +249,7 @@ function AlbumDetail() {
                                     variants={track_variants}
                                     initial="initial"
                                     animate="enter"
+                                    onClick={()=> changeTrack(track.title + ' - Artist Name' + (track.feat ? ' ft. ' + track.feat : ''))}
                                 >
                                     <span className='title'>{track.title}</span>
                                     {track.feat && <span>feat: {track.feat}</span>}
