@@ -3,115 +3,127 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // ou mysql / sqlite selon ton cas
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Album {
-  id_album     String   @id @db.VarChar(42)
-  title        String?  @db.VarChar(42)
-  release_date String?  @db.VarChar(42)
-  cover_art    String?  @db.VarChar(42)
+model Users {
+  id_user  Int    @id @default(autoincrement())
+  username String @db.VarChar(100)
+  email    String @unique @db.VarChar(150)
+  password String @db.VarChar(255)
+
+  @@map("USERS")
+}
+
+model Albums {
+  id_album     Int       @id @default(autoincrement())
+  title        String    @db.VarChar(150)
+  release_date DateTime? @db.Date
+  cover_art    String?   @db.VarChar(255)
 
   tracks   Contains[]
   artists  Creates[]
-  pictures Picture[]
+  pictures Pictures[]
+
+  @@map("ALBUMS")
 }
 
-model Artist {
-  id_artist     String   @id @db.VarChar(42)
-  name          String?  @db.VarChar(42)
-  avatar        String?  @db.VarChar(42)
-  biography     String?  @db.VarChar(42)
-  date_of_birth String?  @db.VarChar(42)
+model Artists {
+  id_artist     Int       @id @default(autoincrement())
+  name          String    @db.VarChar(100)
+  avatar        String?   @db.VarChar(255)
+  biography     String?   @db.Text
+  date_of_birth DateTime? @db.Date
 
   albums   Creates[]
   tracks   Performs[]
-  pictures Picture[]
+  pictures Pictures[]
+
+  @@map("ARTISTS")
 }
 
-model Track {
-  id_track String  @id @db.VarChar(42)
-  title    String? @db.VarChar(42)
-  duration String? @db.VarChar(42)
+model Tracks {
+  id_track Int     @id @default(autoincrement())
+  title    String  @db.VarChar(150)
+  duration Int?    @default(0)
 
   albums   Contains[]
   artists  Performs[]
   genres   Classifies[]
-  pictures Picture[]
+  pictures Pictures[]
+
+  @@map("TRACKS")
 }
 
-model Genre {
-  id_genre    String  @id @db.VarChar(42)
-  title       String? @db.VarChar(42)
-  description String? @db.VarChar(42)
+model Genres {
+  id_genre    Int     @id @default(autoincrement())
+  title       String  @db.VarChar(100)
+  description String? @db.Text
 
   tracks Classifies[]
+
+  @@map("GENRES")
 }
 
-model User {
-  id_user  String  @id @db.VarChar(42)
-  username String? @db.VarChar(42)
-  email    String? @db.VarChar(42)
-  password String? @db.VarChar(42)
+model Pictures {
+  id_picture Int     @id @default(autoincrement())
+  filename   String  @db.VarChar(255)
+  label      String? @db.VarChar(100)
+  id_track   Int?
+  id_album   Int?
+  id_artist  Int?
+
+  track  Tracks?  @relation(fields: [id_track], references: [id_track], onDelete: Cascade)
+  album  Albums?  @relation(fields: [id_album], references: [id_album], onDelete: Cascade)
+  artist Artists? @relation(fields: [id_artist], references: [id_artist], onDelete: Cascade)
+
+  @@map("PICTURES")
 }
 
-/* ===== TABLES DE JOINTURE ===== */
+// TABLES D'ASSOCIATION
+
+model Classifies {
+  id_genre Int
+  id_track Int
+
+  genre Genres @relation(fields: [id_genre], references: [id_genre], onDelete: Cascade)
+  track Tracks @relation(fields: [id_track], references: [id_track], onDelete: Cascade)
+
+  @@id([id_genre, id_track])
+  @@map("CLASSIFIES")
+}
 
 model Contains {
-  id_album String @db.VarChar(42)
-  id_track String @db.VarChar(42)
+  id_album Int
+  id_track Int
 
-  album Album @relation(fields: [id_album], references: [id_album])
-  track Track @relation(fields: [id_track], references: [id_track])
+  album Albums @relation(fields: [id_album], references: [id_album], onDelete: Cascade)
+  track Tracks @relation(fields: [id_track], references: [id_track], onDelete: Cascade)
 
   @@id([id_album, id_track])
+  @@map("CONTAINS")
 }
 
 model Creates {
-  id_artist String @db.VarChar(42)
-  id_album  String @db.VarChar(42)
+  id_artist Int
+  id_album  Int
 
-  artist Artist @relation(fields: [id_artist], references: [id_artist])
-  album  Album  @relation(fields: [id_album], references: [id_album])
+  artist Artists @relation(fields: [id_artist], references: [id_artist], onDelete: Cascade)
+  album  Albums  @relation(fields: [id_album], references: [id_album], onDelete: Cascade)
 
   @@id([id_artist, id_album])
+  @@map("CREATES")
 }
 
 model Performs {
-  id_artist      String @db.VarChar(42)
-  id_track       String @db.VarChar(42)
-  is_main_artist String? @db.VarChar(42)
+  id_artist      Int
+  id_track       Int
+  is_main_artist Boolean? @default(true)
 
-  artist Artist @relation(fields: [id_artist], references: [id_artist])
-  track  Track  @relation(fields: [id_track], references: [id_track])
+  artist Artists @relation(fields: [id_artist], references: [id_artist], onDelete: Cascade)
+  track  Tracks  @relation(fields: [id_track], references: [id_track], onDelete: Cascade)
 
   @@id([id_artist, id_track])
-}
-
-model Classifies {
-  id_genre String @db.VarChar(42)
-  id_track String @db.VarChar(42)
-
-  genre Genre @relation(fields: [id_genre], references: [id_genre])
-  track Track @relation(fields: [id_track], references: [id_track])
-
-  @@id([id_genre, id_track])
-}
-
-model Picture {
-  id_picture String  @id @db.VarChar(42)
-  filename   String? @db.VarChar(42)
-  label      String? @db.VarChar(42)
-
-  id_track  String @db.VarChar(42)
-  id_album  String @db.VarChar(42)
-  id_artist String @db.VarChar(42)
-
-  track  Track  @relation(fields: [id_track], references: [id_track])
-  album  Album  @relation(fields: [id_album], references: [id_album])
-  artist Artist @relation(fields: [id_artist], references: [id_artist])
-
-  @@unique([id_album])
-  @@unique([id_artist])
+  @@map("PERFORMS")
 }

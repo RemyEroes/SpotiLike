@@ -111,7 +111,6 @@
     }
 
     .album-detail-right {
-        // background-color: green;
         flex-grow: 1;
         height: 100%;
         overflow: hidden;
@@ -172,6 +171,8 @@
                 /* Centrer la forme */
                 mask-position: center;
                 -webkit-mask-position: center;
+
+                user-select: none;
 
                 cursor: pointer;
 

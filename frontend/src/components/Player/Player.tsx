@@ -35,7 +35,7 @@ function Player() {
 
     return (
         <AnimatePresence>
-            {currentTrack &&
+            {currentTrack !== null &&
                 <motion.div
                     className="player"
                     layoutId="player-component"
@@ -46,7 +46,18 @@ function Player() {
                 >
                     <PlayPauseButton />
                     <div className="player-track-info">
-                        <h4>{currentTrack}</h4>
+                        <AnimatePresence>
+                            {currentTrack && currentTrack !== '' && (
+                                <motion.h4
+                                    key={currentTrack}
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -15, transition: { duration: 0.2 } }}
+                                >
+                                    <b>{currentTrack.split(' - ')[0].toUpperCase()}</b> - {currentTrack.split(' - ')[1]}
+                                </motion.h4>
+                            )}
+                        </AnimatePresence>
                     </div>
                     <div className="player-buttons">
                         <motion.img
@@ -55,7 +66,7 @@ function Player() {
                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             src={'/assets/icons/play-next.svg'}
                             alt=""
-                            // TODO : implement next track functionality
+                        // TODO : implement next track functionality
                         />
                         <motion.img
                             initial={{ opacity: 0.7 }}

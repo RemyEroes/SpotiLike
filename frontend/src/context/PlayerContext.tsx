@@ -6,7 +6,7 @@ type PlayerContextType = {
     currentTrack: string | null;
     position: string | null;
     setIsPlaying: (value: boolean) => void;
-    setCurrentTrack: (value: string) => void;
+    setCurrentTrack: (value: string | null) => void;
     setPosition: (value: string) => void;
     closePlayer: () => void;
 };

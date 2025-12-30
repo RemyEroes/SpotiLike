@@ -10,7 +10,7 @@ function AlbumList() {
     }, []);
 
   return (
-      <CircularScrollWheel />
+      <CircularScrollWheel type="album" />
   )
 }
 

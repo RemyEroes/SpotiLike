@@ -1,7 +1,8 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion, type Variants } from 'framer-motion';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
-import React, { useContext, useEffect, useMemo } from 'react';
+import axios, { all } from "axios";
+import React, { useState, useContext, useEffect, useMemo, use } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
 const mediasSrc = [
@@ -30,7 +31,7 @@ const mediasSrc = [
     "assets/medias/beatles.png",
     "assets/medias/civilisation.png",
 
-];
+]; // 24 albums
 
 const genresItems = [
     { src: "/assets/genres/rock.svg", name: "Rock" },
@@ -47,41 +48,118 @@ const genresItems = [
     { src: "/assets/genres/rock.svg", name: "Disco" },
 ];
 
-const trackList: Track[] = [
-    { id: 1, title: "Track One", feat: undefined, duration: "3:45" },
-    { id: 2, title: "Track Two", feat: "artist, artist", duration: "4:20" },
-    { id: 3, title: "Track Three", feat: "artist", duration: "5:10" },
-    { id: 4, title: "Track Four", feat: "artist", duration: "3:45" },
-    { id: 5, title: "Track Five", feat: "artist, artist", duration: "4:20" },
-    { id: 6, title: "Track Six", feat: "artist", duration: "5:10" },
-    { id: 7, title: "Track Seven", feat: undefined, duration: "3:45" },
-    { id: 8, title: "Track Eight", feat: "artist, artist", duration: "4:20" },
-    { id: 9, title: "Track Nine", feat: "artist", duration: "5:10" },
-    { id: 10, title: "Track Ten", feat: undefined, duration: "3:45" },
-    { id: 11, title: "Track Eleven", feat: "artist, artist", duration: "4:20" },
-    { id: 12, title: "Track Twelve", feat: "artist", duration: "5:10" },
-];
-
 type GenreItemCustom = {
     index: number;
     rotate: number;
 };
 
+type Genre = {
+    id_genre: number;
+    title: string;
+    description: string | null;
+}
+
 type Track = {
     id: number,
     title: string,
-    feat: string | undefined,
-    duration: string
+    genres: Genre[],
+    duration: number
+}
+
+
+interface Album {
+    id_album: number;
+    title: string;
+    cover_art: string;
+    artist_name: string;
+    release_date?: string;
+    artist_avatar: string;
+    artist_bio: string;
+
 }
 
 
 function AlbumDetail() {
     const { albumId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { setPosition } = useContext(PlayerContext);
 
-    const indexParsed = parseInt(albumId || "0", 10);
-    const albumImg = mediasSrc[indexParsed % 24];
+    const [albumData, setAlbumData] = useState<Album | null>(null);
+    const [albumTracks, setAlbumTracks] = useState<Track[] | null>(null);
+
+    const [filteredTracks, setFilteredTracks] = useState<Track[] | null>(null);
+    const [genreFilter, setGenreFilter] = useState<Genre[] | null>(null);
+
+    const initialCoverArt = location.state?.coverArt;
+
+    useEffect(() => {
+        const fetchData = async () => {
+
+            if (!albumId) return;
+
+            try {
+                const resAlbum = await axios.get("http://localhost:3000/api/albums/" + albumId);
+                const resTracks = await axios.get("http://localhost:3000/api/albums/" + albumId + "/songs");
+                setAlbumData(resAlbum.data.data || null);
+                setAlbumTracks(resTracks.data.data || null);
+                setFilteredTracks(resTracks.data.data || null);
+                console.log("Fetched album data:", resAlbum.data.data);
+                console.log("Fetched album tracks:", resTracks.data.data);
+            } catch (err) {
+                console.error("Erreur lors du fetch backend:", err);
+            }
+        };
+        fetchData();
+
+    }, [albumId]);
+
+    useEffect(() => {
+
+        if (!genreFilter || genreFilter.length === 0) {
+            setFilteredTracks(albumTracks);
+            return;
+        }
+
+        setFilteredTracks(null);
+
+        const filtered = albumTracks?.filter(track =>
+            track.genres.some(genre =>
+                genreFilter.some(filterGenre => filterGenre.id_genre === genre.id_genre)
+            )
+        ) || null;
+
+        setFilteredTracks(filtered);
+
+    }, [genreFilter, albumTracks]);
+
+    const toggleGenreFilter = (genre: Genre) => {
+        if (!genreFilter) {
+            setGenreFilter([genre]);
+            return;
+        }
+
+        const exists = genreFilter.find(g => g.id_genre === genre.id_genre);
+        if (exists) {
+            const newFilter = genreFilter.filter(g => g.id_genre !== genre.id_genre);
+            setGenreFilter(newFilter.length > 0 ? newFilter : null);
+        } else {
+            setGenreFilter([...genreFilter, genre]);
+        }
+    };
+
+    const allGenres = useMemo(() => {
+        if (!albumTracks) return [];
+        const genreMap = new Map<number, Genre>();
+        albumTracks.forEach(track => {
+            track.genres.forEach(genre => {
+                genreMap.set(genre.id_genre, genre);
+            });
+        });
+        return Array.from(genreMap.values());
+    }, [albumTracks]);
+
+    const finalCoverSrc = albumData?.cover_art ? `/assets/medias/${albumData.cover_art}` : initialCoverArt;
 
     const isOnTransition = localStorage.getItem("albumOnTransition") === "true";
 
@@ -105,7 +183,7 @@ function AlbumDetail() {
                 delay: 0.5 + (index * 0.05),
                 ease: [0.215, 0.61, 0.335, 1]
             }
-        })
+        }),
     }
 
     const track_variants: Variants = {
@@ -142,45 +220,69 @@ function AlbumDetail() {
         })
     }
 
+    const secondsToMinutes = (seconds: number): string => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    const dateToReadable = (dateStr: string): string => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
     useEffect(() => {
         setPosition('left');
     }, []);
 
     const { setCurrentTrack, setIsPlaying } = useContext(PlayerContext);
-    
+
     const changeTrack = (trackTitle: string) => {
         localStorage.setItem('player-currentTrack', trackTitle);
         localStorage.setItem('player-isPlaying', 'true');
-        setCurrentTrack(trackTitle);
+
+        setCurrentTrack('');
         setIsPlaying(true);
+
+        setTimeout(() => {
+            setCurrentTrack(trackTitle);
+            setIsPlaying(true);
+        }, 200);
     }
 
     return (
         <div className='album-detail-container'>
-            <button className='back-button' onClick={() => { navigate(-1) }}>BACK</button>
+            <button className='back-button' onClick={() => { 
+                localStorage.setItem("albumToCenterOnBack", albumId!);
+                navigate(-1) 
+                }}>BACK</button>
             <div className='album-detail-left'>
                 <div className='album-detail-title'>
                     <motion.h2
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.2 }}
-                    >Album Detail</motion.h2>
+                    >{albumData?.title}</motion.h2>
                     <motion.h4
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1, delay: 0.3 }}
-                    >12/12/2025</motion.h4>
+                    >{dateToReadable(albumData?.release_date || '')}</motion.h4>
                 </div>
 
                 <motion.h3
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.4 }}>
-                    Artist Name
+                    {albumData?.artist_name || 'Unknown Artist'}
                 </motion.h3>
 
                 <motion.img
-                    src={`/${albumImg}`}
+                    src={finalCoverSrc}
                     alt="Album cover"
 
                     layoutId={`album-cover-${albumId}`}
@@ -204,23 +306,26 @@ function AlbumDetail() {
             </div>
             <div className='album-detail-right'>
                 <div className='album-detail-genres-container'>
-                    {genresItems.map((genre, index: number) => {
-
-                        return (
+                    <div className='album-detail-genres-container'>
+                        {allGenres.map((genre: Genre, index: number) => (
                             <motion.div
                                 className='album-detail-genre-item'
-                                key={index}
+                                key={genre.id_genre}
+                                style={{
+                                    backgroundColor: genreFilter && genreFilter.length > 0 && genreFilter.find(g => g.id_genre === genre.id_genre) ? '#1ed75fc3' : 'rgb(81, 81, 81)'
+                                }}
                                 custom={{ index, rotate: randomRotations[index] }}
                                 variants={album_genre_item_variants}
                                 animate="enter"
                                 initial="initial"
-                                whileHover={{ scale: 0.9, rotate: (randomRotations[index]/2) }}
+                                whileHover={{ scale: 0.9, rotate: (randomRotations[index] / 2) }}
+                                onClick={() => toggleGenreFilter(genre)}
                             >
-                                <img src={genre.src} alt={genre.name} />
-                                <span>{genre.name}</span>
+                                <img src={`/assets/genres/rock.svg`} alt={genre.title} />
+                                <span>{genre.title}</span>
                             </motion.div>
-                        )
-                    })}
+                        ))}
+                    </div>
                 </div>
                 <section className='album-detail-right-scroll-section' >
                     <motion.h3
@@ -233,7 +338,7 @@ function AlbumDetail() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: 0.6 }}
                     >
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        {albumData?.artist_bio || 'No description available for this album.'}
                     </motion.p>
                     <motion.h3
                         initial={{ opacity: 0, y: 5 }}
@@ -241,7 +346,7 @@ function AlbumDetail() {
                         transition={{ duration: 0.3, delay: 0.7 }}
                     >Tracks</motion.h3>
                     <div className='album-detail-tracks-container'>
-                        {trackList.map((track, index) => (
+                        {filteredTracks && filteredTracks.map((track, index) => (
                             <React.Fragment key={index}>
                                 <motion.div
                                     className='album-detail-track-item'
@@ -249,25 +354,26 @@ function AlbumDetail() {
                                     variants={track_variants}
                                     initial="initial"
                                     animate="enter"
-                                    onClick={()=> changeTrack(track.title + ' - Artist Name' + (track.feat ? ' ft. ' + track.feat : ''))}
+                                    onClick={() => changeTrack(track.title + ' - ' + albumData!.artist_name)}
                                 >
                                     <span className='title'>{track.title}</span>
-                                    {track.feat && <span>feat: {track.feat}</span>}
-                                    <span>{track.duration}</span>
+                                    {<span>spining logo</span>}
+                                    <span>{secondsToMinutes(track.duration)}</span>
                                 </motion.div>
-                                {index < trackList.length - 1 && <motion.div
+                                {index < filteredTracks.length - 1 && <motion.div
                                     className='track-separator'
                                     custom={index}
                                     variants={track_separator_variants}
                                     initial="initial"
                                     animate="enter"
                                 />}
+
                             </React.Fragment>
                         ))}
                     </div>
                 </section>
             </div>
-        </div>
+        </div >
     );
 }
 
