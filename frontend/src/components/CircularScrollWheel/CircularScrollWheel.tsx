@@ -10,6 +10,7 @@ interface TransitionModel {
     index: number;
     rect: DOMRect;
     rotation: number;
+    avatarIndexLayout: number | undefined
 }
 
 
@@ -22,10 +23,11 @@ interface Album {
 }
 
 interface Artist {
-    id: number;
-    artist_name: string;
+    id_artist: number;
+    name: string;
+    date_of_birth?: string;
     avatar?: string;
-    [key: number]: number | string | undefined;
+    biography?: string;
 }
 
 type DataType = Album | Artist;
@@ -38,35 +40,48 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
 
     const [transitionModel, setTransitionModel] = useState<TransitionModel & { id: number } | null>(null);
     const [showTitle, setShowTitle] = useState(true);
-    const [titleInfo, setTitleInfo] = useState<{ title: string; artist: string }>({ title: '', artist: '' });
+    const [titleInfo, setTitleInfo] = useState<{ title: string; artist: string | undefined }>({ title: '', artist: undefined });
     const [items, setItems] = useState<DataType[]>([]);
+    const [duplicatedArtists, setDuplicatedArtists] = useState<boolean>(false);
 
     useEffect(() => {
         if (!type) return;
         const fetchData = async () => {
             try {
                 let url = "";
+                let res;
                 if (type === "album") {
                     url = "http://localhost:3000/api/albums";
+                    res = await axios.get(url);
+
+                    // randomize items and take 24
+                    const randomizedItems = res.data.data.sort(() => 0.5 - Math.random()).slice(0, 24);
+
+                    if (localStorage.getItem("albumToCenterOnBack")) {
+                        const albumIdToCenter = parseInt(localStorage.getItem("albumToCenterOnBack") || "0", 10);
+                        const indexToCenter = randomizedItems.findIndex((item: Album) => item.id_album === albumIdToCenter);
+                        // mettre en premier l'album à centrer
+                        if (indexToCenter !== -1) {
+                            const itemToCenter = randomizedItems.splice(indexToCenter, 1)[0];
+                            randomizedItems.unshift(itemToCenter);
+                        }
+                    }
+                    localStorage.removeItem("albumToCenterOnBack");
+                    setItems(randomizedItems || []);
                 } else if (type === "artist") {
                     url = "http://localhost:3000/api/artists";
-                }
-                const res = await axios.get(url);
+                    res = await axios.get(url);
 
-                // randomize items and take 24
-                const randomizedItems = res.data.data.sort(() => 0.5 - Math.random()).slice(0, 24);
-
-                if (localStorage.getItem("albumToCenterOnBack")) {
-                    const albumIdToCenter = parseInt(localStorage.getItem("albumToCenterOnBack") || "0", 10);
-                    const indexToCenter = randomizedItems.findIndex((item: Album) => item.id_album === albumIdToCenter);
-                    // mettre en premier l'album à centrer
-                    if (indexToCenter !== -1) {
-                        const itemToCenter = randomizedItems.splice(indexToCenter, 1)[0];
-                        randomizedItems.unshift(itemToCenter);
+                    // randomize items and take 24 (or duplicates if less than 24)
+                    let fetchedItems = res.data.data;
+                    while (fetchedItems.length < 24) {
+                        fetchedItems = fetchedItems.concat(res.data.data);
+                        setDuplicatedArtists(true);
                     }
+                    const randomizedItems = fetchedItems.sort(() => 0.5 - Math.random()).slice(0, 24);
+                    setItems(randomizedItems || []);
                 }
-                localStorage.removeItem("albumToCenterOnBack");
-                setItems(randomizedItems || []);
+
 
             } catch (err) {
                 console.error("Erreur lors du fetch backend:", err);
@@ -111,6 +126,9 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
             if (type === "album") {
                 const album = itemData as Album;
                 setTitleInfo({ title: album.title, artist: album.artist_name || 'Unknown Artist' });
+            } else if (type === "artist") {
+                const artist = itemData as Artist;
+                setTitleInfo({ title: artist.name, artist: undefined });
             }
 
             medias.forEach((el) => {
@@ -169,8 +187,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
 
 
     // --- GESTION DU CLIC ---
-    const handleImageClick = (e: React.MouseEvent<HTMLImageElement>, id: number, index: number, imgSrc: string) => {
-        console.log('Image clicked:', { id, index, imgSrc });
+    const handleImageClick = (e: React.MouseEvent<HTMLImageElement>, id: number, index: number, imgSrc: string, avatarIndexLayout: number | undefined) => {
         if (transitionModel) return;
 
         setShowTitle(false);
@@ -194,22 +211,33 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
             index: index,
             id: id,
             rect: rect,
-            rotation: currentVisualRotation
+            rotation: currentVisualRotation,
+            avatarIndexLayout: avatarIndexLayout
         });
 
-        localStorage.setItem("albumOnTransition", "true");
+        localStorage.setItem(type === "album" ? "albumOnTransition" : "artistOnTransition", "true");
 
         // 3. Navigation
         // On navigue quasi instantanément. Grâce à AnimatePresence, 
         // ce composant restera monté le temps que l'autre arrive.
         setTimeout(() => {
             // CORRECTION ICI : On passe l'image dans le state
-            navigate(`/albums/${id}`, {
-                state: {
-                    coverArt: '/' + imgSrc, // On passe le chemin complet utilisé par le modèle de transition
-                    prevId: id
-                }
-            });
+            if (type === "album") {
+                navigate(`/albums/${id}`, {
+                    state: {
+                        coverArt: '/' + imgSrc, // On passe le chemin complet utilisé par le modèle de transition
+                        prevId: id
+                    }
+                });
+            } else if (type === "artist") {
+                navigate(`/artists/${id}`, {
+                    state: {
+                        avatar: '/' + imgSrc, // On passe le chemin complet utilisé par le modèle de transition
+                        prevId: id,
+                        avatarIndexLayout: duplicatedArtists ? avatarIndexLayout : undefined
+                    }
+                });
+            }
         }, 100);
     };
 
@@ -218,8 +246,8 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
             <AnimatePresence>
                 {showTitle && (
                     <>
-                        <div className="album-title-container">
-                            <div className="album-title">
+                        <div className={`${type}-title-container`}>
+                            <div className={`${type}-title`}>
                                 <motion.h2
                                     data-text={titleInfo.title.length > 20
                                         ? titleInfo.title.slice(0, 20) + "..."
@@ -234,13 +262,14 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                                         : titleInfo.title}
                                 </motion.h2>
 
-                                <motion.h3
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
-                                    transition={{ type: 'spring', stiffness: 100, delay: 0.1 }}>
-                                    {titleInfo.artist}
-                                </motion.h3>
+                                {titleInfo.artist && (
+                                    <motion.h3
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
+                                        transition={{ type: 'spring', stiffness: 100, delay: 0.1 }}>
+                                        {titleInfo.artist}
+                                    </motion.h3>)}
                             </div>
                         </div>
                         <motion.img
@@ -267,13 +296,16 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                 {items.map((item: Album | Artist, index, arr) => {
                     let albumItem: Album | undefined;
                     let artistItem: Artist | undefined;
+                    let itemId: number;
 
                     if (type === "album") {
                         // On force le type ici
                         albumItem = item as Album;
+                        itemId = albumItem.id_album;
                     }
                     else if (type === "artist") {
                         artistItem = item as Artist;
+                        itemId = artistItem.id_artist;
                     }
 
                     const length = arr.length;
@@ -281,7 +313,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                     if (type === "album") {
                         isTransitioning = transitionModel?.id === albumItem?.id_album;
                     } else if (type === "artist") {
-                        isTransitioning = transitionModel?.id === artistItem?.id;
+                        isTransitioning = transitionModel?.id === artistItem?.id_artist;
                     }
 
                     let delayAnimate = 0;
@@ -322,17 +354,25 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                     if (type === "album") {
                         imgSrc = `assets/medias/${albumItem?.cover_art}`;
                     } else if (type === "artist") {
-                        imgSrc = artistItem?.avatar || "assets/medias/default-artist.png";
+                        imgSrc = `assets/medias/avatars/${artistItem?.avatar}`;
                     }
 
+
+
                     return (
-                        <div className="group" key={albumItem?.id_album} >
+                        <div className="group" key={`${type}-${type === "album" ? (albumItem as Album).id_album : (artistItem as Artist).name}${duplicatedArtists && `-${index}`}`} >
                             <div className="inner-media">
                                 <motion.img
                                     className={`media ${centerIndex === index ? 'active' : ''}`}
                                     src={imgSrc}
-                                    alt={type === "album" ? (albumItem as Album).title : (artistItem as Artist).artist_name}
-                                    onClick={(e) => handleImageClick(e, albumItem!.id_album, index, imgSrc)}
+                                    alt={type === "album" ? (albumItem as Album).title : (artistItem as Artist).name}
+                                    onClick={(e) => handleImageClick(e, itemId, index, imgSrc, duplicatedArtists && type === "artist" ? index : undefined)}
+                                    // src par défaut pour l'artiste ou l'album
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = type === "album"
+                                            ? '/assets/medias/default_album.svg'
+                                            : '/assets/medias/avatars/default_artist.png';
+                                    }}
                                     style={{
                                         opacity: isTransitioning ? 0 : 1,
                                         transition: 'opacity 0.2s',
@@ -353,8 +393,8 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                 transitionModel && (
                     <motion.img
                         src={transitionModel.src}
-                        // Le layoutId magique
-                        layoutId={`album-cover-${transitionModel.id}`}
+                        // Le layoutId magique (avec -avatarIndexLayout pour les avatars en double)
+                        layoutId={`${type}-cover-${transitionModel.id}${transitionModel.avatarIndexLayout ? `-${transitionModel.avatarIndexLayout}` : ''}`}
 
                         className="media active"
 

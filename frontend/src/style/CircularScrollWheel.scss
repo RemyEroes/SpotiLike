@@ -4,6 +4,7 @@
 .circular-scroll-wheel {
     height: 100vh;
 
+    .artist-title-container,
     .album-title-container {
         position: fixed;
         top: 20%;
@@ -12,7 +13,7 @@
         align-items: center;
         justify-content: center;
 
-
+        .artist-title,
         .album-title {
             display: flex;
             flex-direction: column;

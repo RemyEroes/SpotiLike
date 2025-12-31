@@ -7,6 +7,8 @@ import AlbumList from './pages/AlbumList'
 import AlbumDetail from './pages/AlbumDetail'
 import './style/App.css'
 import Noise from './effects/Noise';
+import ArtistList from "./pages/ArtistList";
+import ArtistDetail from "./pages/ArtistDetail";
 
 function App() {
 
@@ -35,6 +37,8 @@ function App() {
           <Route path="/" element={<AlbumList />} />
           <Route path="/albums/:albumId" element={<AlbumDetail />} />
           <Route path="/albums" element={<AlbumList />} />
+          <Route path="/artists" element={<ArtistList />} />
+          <Route path="/artists/:artistId" element={<ArtistDetail />} />
         </Routes>
       </AnimatePresence>
     </>

@@ -234,15 +234,11 @@ export const getArtistById = async (req: Request, res: Response): Promise<void> 
     const { id } = req.params;
     
     const [artists] = await pool.query<Artist[]>(`
-      SELECT a.*, 
-             COUNT(DISTINCT c.id_album) as nb_albums,
-             COUNT(DISTINCT p.id_track) as nb_tracks
+      SELECT a.*
       FROM ARTISTS a
-      LEFT JOIN CREATES c ON a.id_artist = c.id_artist
-      LEFT JOIN PERFORMS p ON a.id_artist = p.id_artist
       WHERE a.id_artist = ?
-      GROUP BY a.id_artist
     `, [id]);
+    console.log(artists);
     
     if (artists.length === 0) {
       res.status(404).json({ success: false, error: 'Artiste non trouvé' });
