@@ -196,6 +196,15 @@ function ArtistDetail() {
                                 <span>{album.title}</span>
                             </motion.div>
                         ))}
+                        {artistAlbums.length === 0 && (
+                            <motion.p
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: 0.8 }}
+                            >
+                                This artist has no albums.
+                            </motion.p>
+                        )}
                     </div>
                 </section>
             </div>
