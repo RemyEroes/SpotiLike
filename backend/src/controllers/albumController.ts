@@ -28,7 +28,7 @@ export const getAlbumById = async (req: Request, res: Response): Promise<void> =
     const { id } = req.params;
     
     const [albums] = await pool.query<Album[]>(`
-      SELECT a.*, ar.name as artist_name, ar.avatar as artist_avatar, ar.biography as artist_bio
+      SELECT a.*, ar.id_artist, ar.name as artist_name, ar.avatar as artist_avatar, ar.biography as artist_bio
       FROM ALBUMS a
       LEFT JOIN CREATES c ON a.id_album = c.id_album
       LEFT JOIN ARTISTS ar ON c.id_artist = ar.id_artist

@@ -1,37 +1,10 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
-import axios, { all } from "axios";
+import axios from "axios";
 import React, { useState, useContext, useEffect, useMemo, use } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
-const mediasSrc = [
-    "assets/medias/alive.png",
-    "assets/medias/beatles.png",
-    "assets/medias/civilisation.png",
-    "assets/medias/da-funk.png",
-    "assets/medias/la-fuite-en-avant.png",
-    "assets/medias/pulsar.png",
-    "assets/medias/random-access-memories.png",
-    "assets/medias/alive.png",
-    "assets/medias/beatles.png",
-    "assets/medias/civilisation.png",
-    "assets/medias/da-funk.png",
-    "assets/medias/la-fuite-en-avant.png",
-    "assets/medias/pulsar.png",
-    "assets/medias/random-access-memories.png",
-    "assets/medias/alive.png",
-    "assets/medias/beatles.png",
-    "assets/medias/civilisation.png",
-    "assets/medias/random-access-memories.png",
-    "assets/medias/alive.png",
-    "assets/medias/beatles.png",
-    "assets/medias/civilisation.png",
-    "assets/medias/alive.png",
-    "assets/medias/beatles.png",
-    "assets/medias/civilisation.png",
-
-]; // 24 albums
 
 const genresItems = [
     { src: "/assets/genres/rock.svg", name: "Rock" },
@@ -71,6 +44,7 @@ interface Album {
     id_album: number;
     title: string;
     cover_art: string;
+    id_artist: number;
     artist_name: string;
     release_date?: string;
     artist_avatar: string;
@@ -100,12 +74,11 @@ function AlbumDetail() {
 
             try {
                 const resAlbum = await axios.get("http://localhost:3000/api/albums/" + albumId);
+                console.log(resAlbum.data);
                 const resTracks = await axios.get("http://localhost:3000/api/albums/" + albumId + "/songs");
                 setAlbumData(resAlbum.data.data || null);
                 setAlbumTracks(resTracks.data.data || null);
                 setFilteredTracks(resTracks.data.data || null);
-                console.log("Fetched album data:", resAlbum.data.data);
-                console.log("Fetched album tracks:", resTracks.data.data);
             } catch (err) {
                 console.error("Erreur lors du fetch backend:", err);
             }
@@ -277,7 +250,10 @@ function AlbumDetail() {
                 <motion.h3
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.4 }}>
+                    transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.4 }}
+                    onClick={() => { navigate('/artists/' + albumData?.id_artist) }}
+                    data-text={albumData?.artist_name || 'Unknown Artist'}
+                    >
                     {albumData?.artist_name || 'Unknown Artist'}
                 </motion.h3>
 
