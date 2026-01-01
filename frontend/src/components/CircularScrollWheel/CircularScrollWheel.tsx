@@ -15,11 +15,12 @@ interface TransitionModel {
 
 
 interface Album {
+    artist: Artist | undefined;
+    artists: ArtistItem[];
+    cover_art: string;
     id_album: number;
+    release_date: "2022-06-24T00:00:00.000Z";
     title: string;
-    cover_art?: string;
-    artist_name?: string;
-    [key: number]: number | string | undefined;
 }
 
 interface Artist {
@@ -28,6 +29,12 @@ interface Artist {
     date_of_birth?: string;
     avatar?: string;
     biography?: string;
+}
+
+interface ArtistItem {
+    artist: Artist;
+    id_album: number;
+    id_artist: number;
 }
 
 type DataType = Album | Artist;
@@ -54,8 +61,14 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                     url = "http://localhost:3000/api/albums";
                     res = await axios.get(url);
 
+                    // format data
+                    const albums = res.data.data;
+                    albums.forEach((album: Album) => {
+                        album.artist = album.artists[0]?.artist;
+                    })
+
                     // randomize items and take 24
-                    const randomizedItems = res.data.data.sort(() => 0.5 - Math.random()).slice(0, 24);
+                    const randomizedItems = albums.sort(() => 0.5 - Math.random()).slice(0, 24);
 
                     if (localStorage.getItem("albumToCenterOnBack")) {
                         const albumIdToCenter = parseInt(localStorage.getItem("albumToCenterOnBack") || "0", 10);
@@ -125,7 +138,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
             const itemData = items[normalizedIndex];
             if (type === "album") {
                 const album = itemData as Album;
-                setTitleInfo({ title: album.title, artist: album.artist_name || 'Unknown Artist' });
+                setTitleInfo({ title: album.title, artist: album.artist?.name || 'Unknown Artist' });
             } else if (type === "artist") {
                 const artist = itemData as Artist;
                 setTitleInfo({ title: artist.name, artist: undefined });

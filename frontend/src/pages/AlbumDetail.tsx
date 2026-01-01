@@ -1,30 +1,10 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
 import axios from "axios";
-import React, { useState, useContext, useEffect, useMemo, use } from 'react';
+import { useState, useContext, useEffect, useMemo, Fragment } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
-
-const genresItems = [
-    { src: "/assets/genres/rock.svg", name: "Rock" },
-    { src: "/assets/genres/rock.svg", name: "Pop" },
-    { src: "/assets/genres/rock.svg", name: "Jazz" },
-    { src: "/assets/genres/rock.svg", name: "Classical" },
-    { src: "/assets/genres/rock.svg", name: "Hip-Hop" },
-    { src: "/assets/genres/rock.svg", name: "Electronic" },
-    { src: "/assets/genres/rock.svg", name: "Reggae" },
-    { src: "/assets/genres/rock.svg", name: "Blues" },
-    { src: "/assets/genres/rock.svg", name: "Country" },
-    { src: "/assets/genres/rock.svg", name: "Metal" },
-    { src: "/assets/genres/rock.svg", name: "Funk" },
-    { src: "/assets/genres/rock.svg", name: "Disco" },
-];
-
-type GenreItemCustom = {
-    index: number;
-    rotate: number;
-};
 
 type Genre = {
     id_genre: number;
@@ -32,24 +12,46 @@ type Genre = {
     description: string | null;
 }
 
+interface GenreItem {
+    id_genre: number;
+    id_track: number;
+    genre: Genre;
+}
+
+// for framer-motion custom props
+type GenreItemCustom = {
+    index: number;
+    rotate: number;
+};
+
 type Track = {
     id: number,
     title: string,
-    genres: Genre[],
+    genres: GenreItem[],
     duration: number
 }
 
-
 interface Album {
-    id_album: number;
-    title: string;
+    artist: Artist | undefined;
+    artists: ArtistItem[];
     cover_art: string;
-    id_artist: number;
-    artist_name: string;
-    release_date?: string;
-    artist_avatar: string;
-    artist_bio: string;
+    id_album: number;
+    release_date: "2022-06-24T00:00:00.000Z";
+    title: string;
+}
 
+interface Artist {
+    id_artist: number;
+    name: string;
+    date_of_birth?: string;
+    avatar?: string;
+    biography?: string;
+}
+
+interface ArtistItem {
+    artist: Artist;
+    id_album: number;
+    id_artist: number;
 }
 
 
@@ -64,6 +66,7 @@ function AlbumDetail() {
 
     const [filteredTracks, setFilteredTracks] = useState<Track[] | null>(null);
     const [genreFilter, setGenreFilter] = useState<Genre[] | null>(null);
+    const [genres, setGenres] = useState<Genre[] | null>(null);
 
     const initialCoverArt = location.state?.coverArt;
 
@@ -74,9 +77,13 @@ function AlbumDetail() {
 
             try {
                 const resAlbum = await axios.get("http://localhost:3000/api/albums/" + albumId);
-                console.log(resAlbum.data);
                 const resTracks = await axios.get("http://localhost:3000/api/albums/" + albumId + "/songs");
-                setAlbumData(resAlbum.data.data || null);
+
+                // format data
+                const album: Album = resAlbum.data.data;
+                album.artist = album.artists[0]?.artist;   
+
+                setAlbumData(album || null);
                 setAlbumTracks(resTracks.data.data || null);
                 setFilteredTracks(resTracks.data.data || null);
             } catch (err) {
@@ -121,15 +128,19 @@ function AlbumDetail() {
         }
     };
 
-    const allGenres = useMemo(() => {
+    // extract of genres from tracks
+    useMemo(() => {
         if (!albumTracks) return [];
         const genreMap = new Map<number, Genre>();
         albumTracks.forEach(track => {
-            track.genres.forEach(genre => {
-                genreMap.set(genre.id_genre, genre);
+            track.genres.forEach((item: GenreItem) => {
+                if (item.genre) {
+                    genreMap.set(item.id_genre, item.genre);
+                }
             });
         });
-        return Array.from(genreMap.values());
+
+        setGenres(Array.from(genreMap.values()));
     }, [albumTracks]);
 
     const finalCoverSrc = albumData?.cover_art ? `/assets/medias/${albumData.cover_art}` : initialCoverArt;
@@ -137,8 +148,9 @@ function AlbumDetail() {
     const isOnTransition = localStorage.getItem("albumOnTransition") === "true";
 
     const randomRotations = useMemo(() => {
-        return genresItems.map(() => Math.random() * 40 - 20);
-    }, []);
+        if (!genres) return [];
+        return genres.map(() => Math.random() * 40 - 20);
+    }, [genres]);
 
     const album_genre_item_variants: Variants = {
         initial: ({ rotate }: GenreItemCustom) => ({
@@ -229,10 +241,10 @@ function AlbumDetail() {
 
     return (
         <div className='album-detail-container'>
-            <button className='back-button' onClick={() => { 
+            <button className='back-button' onClick={() => {
                 localStorage.setItem("albumToCenterOnBack", albumId!);
-                navigate(-1) 
-                }}>BACK</button>
+                navigate(-1)
+            }}>BACK</button>
             <div className='album-detail-left'>
                 <div className='album-detail-title'>
                     <motion.h2
@@ -251,10 +263,10 @@ function AlbumDetail() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.4 }}
-                    onClick={() => { navigate('/artists/' + albumData?.id_artist) }}
-                    data-text={albumData?.artist_name || 'Unknown Artist'}
-                    >
-                    {albumData?.artist_name || 'Unknown Artist'}
+                    onClick={() => { navigate('/artists/' + albumData?.artist?.id_artist) }}
+                    data-text={albumData?.artist?.name || 'Unknown Artist'}
+                >
+                    {albumData?.artist?.name || 'Unknown Artist'}
                 </motion.h3>
 
                 <motion.img
@@ -283,24 +295,26 @@ function AlbumDetail() {
             <div className='album-detail-right'>
                 <div className='album-detail-genres-container'>
                     <div className='album-detail-genres-container'>
-                        {allGenres.map((genre: Genre, index: number) => (
-                            <motion.div
-                                className='album-detail-genre-item'
-                                key={genre.id_genre}
-                                style={{
-                                    backgroundColor: genreFilter && genreFilter.length > 0 && genreFilter.find(g => g.id_genre === genre.id_genre) ? '#1ed75fc3' : 'rgb(81, 81, 81)'
-                                }}
-                                custom={{ index, rotate: randomRotations[index] }}
-                                variants={album_genre_item_variants}
-                                animate="enter"
-                                initial="initial"
-                                whileHover={{ scale: 0.9, rotate: (randomRotations[index] / 2) }}
-                                onClick={() => toggleGenreFilter(genre)}
-                            >
-                                <img src={`/assets/genres/rock.svg`} alt={genre.title} />
-                                <span>{genre.title}</span>
-                            </motion.div>
-                        ))}
+                        {genres && genres.map((genre: Genre, index: number) => {
+                            return (
+                                <motion.div
+                                    className='album-detail-genre-item'
+                                    key={genre.id_genre}
+                                    style={{
+                                        backgroundColor: genreFilter && genreFilter.length > 0 && genreFilter.find(g => g.id_genre === genre.id_genre) ? '#1ed75fc3' : 'rgb(81, 81, 81)'
+                                    }}
+                                    custom={{ index, rotate: randomRotations[index] }}
+                                    variants={album_genre_item_variants}
+                                    animate="enter"
+                                    initial="initial"
+                                    whileHover={{ scale: 0.9, rotate: (randomRotations[index] / 2) }}
+                                    onClick={() => toggleGenreFilter(genre)}
+                                >
+                                    <img src={`/assets/genres/rock.svg`} alt={genre.title} />
+                                    <span>{genre.title}</span>
+                                </motion.div>
+                            )
+                        })}
                     </div>
                 </div>
                 <section className='album-detail-right-scroll-section' >
@@ -308,13 +322,13 @@ function AlbumDetail() {
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: 0.5 }}
-                    >About this album</motion.h3>
+                    >About this artist</motion.h3>
                     <motion.p
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: 0.6 }}
                     >
-                        {albumData?.artist_bio || 'No description available for this album.'}
+                        {albumData?.artists[0]?.artist.biography || 'No description available for this album.'}
                     </motion.p>
                     <motion.h3
                         initial={{ opacity: 0, y: 5 }}
@@ -323,14 +337,14 @@ function AlbumDetail() {
                     >Tracks</motion.h3>
                     <div className='album-detail-tracks-container'>
                         {filteredTracks && filteredTracks.map((track, index) => (
-                            <React.Fragment key={index}>
+                            <Fragment key={index}>
                                 <motion.div
                                     className='album-detail-track-item'
                                     custom={index}
                                     variants={track_variants}
                                     initial="initial"
                                     animate="enter"
-                                    onClick={() => changeTrack(track.title + ' - ' + albumData!.artist_name)}
+                                    onClick={() => changeTrack(track.title + ' - ' + albumData!.artist?.name)}
                                 >
                                     <span className='title'>{track.title}</span>
                                     {<span>spining logo</span>}
@@ -344,7 +358,7 @@ function AlbumDetail() {
                                     animate="enter"
                                 />}
 
-                            </React.Fragment>
+                            </Fragment>
                         ))}
                     </div>
                 </section>

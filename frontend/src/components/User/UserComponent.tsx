@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from 'react'
-import { motion, AnimatePresence } from "framer-motion";
+import { useContext, useState } from 'react'
+import { motion } from "framer-motion";
 import { LoggedContext } from '../../context/LoggedContext.tsx'
 import '../../style/User.scss'
 import UserNav from './UserNav.tsx';
@@ -7,10 +7,6 @@ import UserNav from './UserNav.tsx';
 function UserComponent() {
     const { isLoggedIn, username } = useContext(LoggedContext);
     const [showNav, setShowNav] = useState(false);
-
-    useEffect(() => {
-        console.log(showNav)
-    }, [showNav]);
    
     return (
         <div className="user-container">

@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==================== ENTITÉS PRINCIPALES ====================
+
 model Users {
   id_user  Int    @id @default(autoincrement())
   username String @db.VarChar(100)
@@ -22,6 +24,7 @@ model Albums {
   release_date DateTime? @db.Date
   cover_art    String?   @db.VarChar(255)
 
+  // Relations
   tracks   Contains[]
   artists  Creates[]
   pictures Pictures[]
@@ -36,6 +39,7 @@ model Artists {
   biography     String?   @db.Text
   date_of_birth DateTime? @db.Date
 
+  // Relations
   albums   Creates[]
   tracks   Performs[]
   pictures Pictures[]
@@ -48,6 +52,7 @@ model Tracks {
   title    String  @db.VarChar(150)
   duration Int?    @default(0)
 
+  // Relations
   albums   Contains[]
   artists  Performs[]
   genres   Classifies[]
@@ -61,6 +66,7 @@ model Genres {
   title       String  @db.VarChar(100)
   description String? @db.Text
 
+  // Relations
   tracks Classifies[]
 
   @@map("GENRES")
@@ -70,10 +76,13 @@ model Pictures {
   id_picture Int     @id @default(autoincrement())
   filename   String  @db.VarChar(255)
   label      String? @db.VarChar(100)
+  
+  // Clés étrangères optionnelles
   id_track   Int?
   id_album   Int?
   id_artist  Int?
 
+  // Relations
   track  Tracks?  @relation(fields: [id_track], references: [id_track], onDelete: Cascade)
   album  Albums?  @relation(fields: [id_album], references: [id_album], onDelete: Cascade)
   artist Artists? @relation(fields: [id_artist], references: [id_artist], onDelete: Cascade)
@@ -81,7 +90,7 @@ model Pictures {
   @@map("PICTURES")
 }
 
-// TABLES D'ASSOCIATION
+// ==================== TABLES D'ASSOCIATION ====================
 
 model Classifies {
   id_genre Int
@@ -119,7 +128,7 @@ model Creates {
 model Performs {
   id_artist      Int
   id_track       Int
-  is_main_artist Boolean? @default(true)
+  is_main_artist Boolean? @default(true) // Correspond au tinyint(1) DEFAULT 1
 
   artist Artists @relation(fields: [id_artist], references: [id_artist], onDelete: Cascade)
   track  Tracks  @relation(fields: [id_track], references: [id_track], onDelete: Cascade)

@@ -1,20 +1,23 @@
 import { Request, Response } from 'express';
-import { ResultSetHeader } from 'mysql2';
-import pool from '../config/database';
-import { Album, Track, AuthenticatedRequest } from '../types';
+import prisma from '../config/prisma';
+import { AuthenticatedRequest } from '../types';
 
 // GET /api/albums
 export const getAllAlbums = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Jointure via CREATES pour avoir l'artiste
-    const [albums] = await pool.query<Album[]>(`
-      SELECT a.*, ar.name as artist_name, ar.id_artist
-      FROM ALBUMS a
-      LEFT JOIN CREATES c ON a.id_album = c.id_album
-      LEFT JOIN ARTISTS ar ON c.id_artist = ar.id_artist
-      ORDER BY a.release_date DESC
-    `);
-    
+    const albums = await prisma.albums.findMany({
+      orderBy: {
+        release_date: 'desc',
+      },
+      include: {
+        artists: {
+          include: {
+            artist: true,
+          },
+        },
+      },
+    });
+
     res.json({ success: true, data: albums });
   } catch (error) {
     console.error('Erreur getAllAlbums:', error);
@@ -26,21 +29,24 @@ export const getAllAlbums = async (req: Request, res: Response): Promise<void> =
 export const getAlbumById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    
-    const [albums] = await pool.query<Album[]>(`
-      SELECT a.*, ar.id_artist, ar.name as artist_name, ar.avatar as artist_avatar, ar.biography as artist_bio
-      FROM ALBUMS a
-      LEFT JOIN CREATES c ON a.id_album = c.id_album
-      LEFT JOIN ARTISTS ar ON c.id_artist = ar.id_artist
-      WHERE a.id_album = ?
-    `, [id]);
-    
-    if (albums.length === 0) {
+
+    const album = await prisma.albums.findUnique({
+      where: { id_album: Number(id) },
+      include: {
+        artists: {
+          include: {
+            artist: true,
+          },
+        },
+      },
+    });
+
+    if (!album) {
       res.status(404).json({ success: false, error: 'Album non trouvé' });
       return;
     }
-    
-    res.json({ success: true, data: albums[0] });
+
+    res.json({ success: true, data: album });
   } catch (error) {
     console.error('Erreur getAlbumById:', error);
     res.status(500).json({ success: false, error: 'Erreur récupération album' });
@@ -51,34 +57,24 @@ export const getAlbumById = async (req: Request, res: Response): Promise<void> =
 export const getAlbumSongs = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    
-    const [albums] = await pool.query<Album[]>('SELECT id_album FROM ALBUMS WHERE id_album = ?', [id]);
-    if (albums.length === 0) {
-      res.status(404).json({ success: false, error: 'Album non trouvé' });
-      return;
-    }
-    
 
-    const [tracks] = await pool.query<Track[]>(`
-      SELECT t.* FROM TRACKS t
-      INNER JOIN CONTAINS co ON t.id_track = co.id_track
-      WHERE co.id_album = ?
-    `, [id]);
+    const tracks = await prisma.tracks.findMany({
+      where: {
+        albums: {
+          some: {
+            id_album: Number(id),
+          },
+        },
+      },
+      include: {
+        genres: {
+          include: {
+            genre: true,
+          },
+        },
+      },
+    });
 
-    // On utilise map pour créer un tableau de promesses
-    await Promise.all(tracks.map(async (track) => {
-      const [genres] = await pool.query<any[]>(`
-        SELECT g.id_genre, g.title, g.description
-        FROM GENRES g
-        INNER JOIN CLASSIFIES cl ON g.id_genre = cl.id_genre
-        WHERE cl.id_track = ?
-      `, [track.id_track]);
-      
-      // On modifie l'objet track (par référence)
-      track.genres = genres;
-    }));
-
-    
     res.json({ success: true, data: tracks });
   } catch (error) {
     console.error('Erreur getAlbumSongs:', error);
@@ -90,41 +86,44 @@ export const getAlbumSongs = async (req: Request, res: Response): Promise<void> 
 export const createAlbum = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, cover_art, release_date, id_artist } = req.body;
-    
+
     if (!title || !id_artist) {
       res.status(400).json({ success: false, error: 'Le titre et l\'id_artist sont requis' });
       return;
     }
-    
+
     // Vérifier l'artiste
-    const [artists] = await pool.query<any[]>('SELECT id_artist FROM ARTISTS WHERE id_artist = ?', [id_artist]);
-    if (artists.length === 0) {
+    const artist = await prisma.artists.findUnique({
+      where: { id_artist: Number(id_artist) },
+    });
+
+    if (!artist) {
       res.status(404).json({ success: false, error: 'Artiste non trouvé' });
       return;
     }
-    
-    // 1. Créer l'album
-    const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO ALBUMS (title, cover_art, release_date) VALUES (?, ?, ?)',
-      [title, cover_art || null, release_date || new Date()]
-    );
-    
-    const newAlbumId = result.insertId;
 
-    // 2. Créer le lien Artiste-Album
-    await pool.query(
-      'INSERT INTO CREATES (id_artist, id_album) VALUES (?, ?)',
-      [id_artist, newAlbumId]
-    );
-    
+    // Créer l'album ET le lien avec l'artiste (Creates) en une seule transaction
+    const newAlbum = await prisma.albums.create({
+      data: {
+        title,
+        cover_art: cover_art || null,
+        release_date: release_date ? new Date(release_date) : new Date(),
+        // Création de la relation dans la table CREATES
+        artists: {
+          create: {
+            artist: {
+              connect: { id_artist: Number(id_artist) },
+            },
+          },
+        },
+      },
+    });
+
     res.status(201).json({
       success: true,
       data: {
-        id_album: newAlbumId,
-        title,
-        cover_art,
-        release_date,
-        id_artist
+        ...newAlbum,
+        id_artist,
       },
       message: 'Album créé avec succès'
     });
@@ -139,56 +138,70 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
   try {
     const { id } = req.params; // id_album
     const { title, duration, id_genres } = req.body;
-    
+
     if (!title) {
       res.status(400).json({ success: false, error: 'Le titre est requis' });
       return;
     }
-    
+
+    const albumId = Number(id);
+
     // Vérifier l'album
-    const [albums] = await pool.query<Album[]>('SELECT id_album FROM ALBUMS WHERE id_album = ?', [id]);
-    if (albums.length === 0) {
+    const album = await prisma.albums.findUnique({
+      where: { id_album: albumId },
+      include: {
+        artists: true, // Pour récupérer l'artiste lié à l'album
+      },
+    });
+
+    if (!album) {
       res.status(404).json({ success: false, error: 'Album non trouvé' });
       return;
     }
 
-    // Récupérer l'artiste de l'album pour lier le morceau à l'artiste aussi (via PERFORMS)
-    const [creators] = await pool.query<any[]>('SELECT id_artist FROM CREATES WHERE id_album = ? LIMIT 1', [id]);
-    const artistId = creators.length > 0 ? creators[0].id_artist : null;
-    
-    // 1. Créer le morceau
-    const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO TRACKS (title, duration) VALUES (?, ?)',
-      [title, duration || 0]
-    );
-    
-    const trackId = result.insertId;
+    // Récupérer l'ID de l'artiste (via la table Creates incluse ci-dessus)
+    const artistId = album.artists[0]?.id_artist || null;
 
-    // 2. Lier à l'album (CONTAINS)
-    await pool.query('INSERT INTO CONTAINS (id_album, id_track) VALUES (?, ?)', [id, trackId]);
+    // Préparer les données pour Prisma
+    // On crée la Track, et en même temps on remplit Contains, Performs et Classifies
+    const newTrack = await prisma.tracks.create({
+      data: {
+        title,
+        duration: duration || 0,
+        // 1. Lien avec l'Album (CONTAINS)
+        albums: {
+          create: {
+            album: {
+              connect: { id_album: albumId },
+            },
+          },
+        },
+        // 2. Lien avec l'Artiste (PERFORMS), seulement si on a trouvé un artiste
+        artists: artistId ? {
+          create: {
+            is_main_artist: true,
+            artist: {
+              connect: { id_artist: artistId },
+            },
+          },
+        } : undefined,
+        // 3. Liens avec les Genres (CLASSIFIES)
+        genres: (id_genres && Array.isArray(id_genres) && id_genres.length > 0) ? {
+          create: id_genres.map((genreId: number) => ({
+            genre: {
+              connect: { id_genre: Number(genreId) },
+            },
+          })),
+        } : undefined,
+      },
+    });
 
-    // 3. Lier à l'artiste (PERFORMS) si trouvé
-    if (artistId) {
-        await pool.query('INSERT INTO PERFORMS (id_artist, id_track, is_main_artist) VALUES (?, ?, 1)', [artistId, trackId]);
-    }
-    
-    // 4. Lier aux genres (CLASSIFIES)
-    if (id_genres && Array.isArray(id_genres) && id_genres.length > 0) {
-      const genreValues = id_genres.map((gid: number) => [gid, trackId]);
-      await pool.query(
-        'INSERT INTO CLASSIFIES (id_genre, id_track) VALUES ?',
-        [genreValues]
-      );
-    }
-    
     res.status(201).json({
       success: true,
       data: {
-        id_track: trackId,
-        title,
-        duration,
-        id_album: parseInt(id),
-        id_genres
+        ...newTrack,
+        id_album: albumId,
+        id_genres,
       },
       message: 'Morceau ajouté avec succès'
     });
@@ -203,25 +216,25 @@ export const updateAlbum = async (req: Request, res: Response): Promise<void> =>
   try {
     const { id } = req.params;
     const { title, cover_art, release_date } = req.body;
-    
-    const [albums] = await pool.query<Album[]>('SELECT * FROM ALBUMS WHERE id_album = ?', [id]);
-    if (albums.length === 0) {
+
+    // On prépare l'objet de données dynamiquement
+    const dataToUpdate: any = {};
+    if (title !== undefined) dataToUpdate.title = title;
+    if (cover_art !== undefined) dataToUpdate.cover_art = cover_art;
+    if (release_date !== undefined) dataToUpdate.release_date = new Date(release_date);
+
+    // Prisma lance une erreur si l'ID n'existe pas, donc on englobe dans try/catch
+    try {
+      await prisma.albums.update({
+        where: { id_album: Number(id) },
+        data: dataToUpdate,
+      });
+    } catch (e) {
+      // Code erreur Prisma pour "Record not found"
       res.status(404).json({ success: false, error: 'Album non trouvé' });
       return;
     }
-    
-    const updates: string[] = [];
-    const values: any[] = [];
-    
-    if (title !== undefined) { updates.push('title = ?'); values.push(title); }
-    if (cover_art !== undefined) { updates.push('cover_art = ?'); values.push(cover_art); }
-    if (release_date !== undefined) { updates.push('release_date = ?'); values.push(release_date); }
-    
-    if (updates.length > 0) {
-        values.push(id);
-        await pool.query(`UPDATE ALBUMS SET ${updates.join(', ')} WHERE id_album = ?`, values);
-    }
-    
+
     res.json({ success: true, message: 'Album mis à jour' });
   } catch (error) {
     console.error('Erreur updateAlbum:', error);
@@ -233,28 +246,44 @@ export const updateAlbum = async (req: Request, res: Response): Promise<void> =>
 export const deleteAlbum = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    
-    // Grâce au ON DELETE CASCADE défini dans la BDD SQL et Prisma, 
-    // supprimer l'album supprimera automatiquement les entrées dans CREATES, CONTAINS, PICTURES.
-    // Cependant, pour les TRACKS, si on veut supprimer les morceaux contenus uniquement dans cet album :
-    
-    // 1. Récupérer les IDs des tracks de cet album
-    const [tracks] = await pool.query<any[]>('SELECT id_track FROM CONTAINS WHERE id_album = ?', [id]);
-    
-    if (tracks.length > 0) {
-        const trackIds = tracks.map(t => t.id_track);
-        // Supprimer les morceaux (le cascade gérera CLASSIFIES, PERFORMS, CONTAINS)
-        await pool.query('DELETE FROM TRACKS WHERE id_track IN (?)', [trackIds]);
+    const albumId = Number(id);
+
+    // Vérifier si l'album existe
+    const album = await prisma.albums.findUnique({
+      where: { id_album: albumId }
+    });
+
+    if (!album) {
+      res.status(404).json({ success: false, error: 'Album non trouvé' });
+      return;
     }
-    
-    // 2. Supprimer l'album
-    const [result] = await pool.query<ResultSetHeader>('DELETE FROM ALBUMS WHERE id_album = ?', [id]);
-    
-    if (result.affectedRows === 0) {
-        res.status(404).json({ success: false, error: 'Album non trouvé' });
-        return;
-    }
-    
+
+    // Logique de suppression complexe : Supprimer les tracks qui sont dans cet album
+    // 1. Trouver les tracks de cet album
+    const tracksToDelete = await prisma.contains.findMany({
+      where: { id_album: albumId },
+      select: { id_track: true }
+    });
+
+    const trackIds = tracksToDelete.map(t => t.id_track);
+
+    // Utilisation d'une transaction pour s'assurer que tout est supprimé ou rien
+    await prisma.$transaction(async (tx) => {
+      // 2. Supprimer les Tracks (Cascade supprimera Performs, Classifies, Contains liés)
+      if (trackIds.length > 0) {
+        await tx.tracks.deleteMany({
+          where: {
+            id_track: { in: trackIds }
+          }
+        });
+      }
+
+      // 3. Supprimer l'album (Cascade supprimera Creates, Contains, Pictures liés)
+      await tx.albums.delete({
+        where: { id_album: albumId }
+      });
+    });
+
     res.json({ success: true, message: 'Album et ses morceaux supprimés' });
   } catch (error) {
     console.error('Erreur deleteAlbum:', error);
