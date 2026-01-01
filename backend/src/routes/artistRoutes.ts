@@ -5,7 +5,8 @@ import {
   getArtistById,
   getArtistSongs,
   updateArtist,
-  deleteArtist
+  deleteArtist,
+  getArtistAlbums
 } from '../controllers/artistController';
 
 const router = Router();
@@ -18,6 +19,9 @@ router.get('/:id', getArtistById);
 
 // GET /api/artists/:id/songs - Morceaux d'un artiste
 router.get('/:id/songs', getArtistSongs);
+
+// GET /api/artists/:id/albums - Albums d'un artiste
+router.get('/:id/albums', getArtistAlbums);
 
 // PUT /api/artists/:id - Modifier un artiste
 router.put('/:id', updateArtist);

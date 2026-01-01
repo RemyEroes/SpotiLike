@@ -7,13 +7,10 @@ import { PlayerContext } from '../context/PlayerContext';
 
 
 interface Album {
-    id_album: number;
-    title: string;
-    cover_art: string;
-    artist_name: string;
-    release_date?: string;
-    artist_avatar: string;
-    artist_bio: string;
+    cover_art: string
+    id_album: number
+    release_date: string
+    title: string
 }
 
 type Artist = {
@@ -32,6 +29,9 @@ function ArtistDetail() {
     const { setPosition } = useContext(PlayerContext);
 
     const [artistData, setArtistData] = useState<Artist | null>(null);
+    const [artistAlbums, setArtistAlbums] = useState<Album[]>([]);
+    const [albumsHasScrolled, setAlbumsHasScrolled] = useState(false);
+
 
     const initialCoverArt = location.state?.avatar;
     const layoutIndex = location.state?.avatarIndexLayout;
@@ -42,11 +42,10 @@ function ArtistDetail() {
             if (!artistId) return;
 
             try {
-                const resAlbum = await axios.get("http://localhost:3000/api/artists/" + artistId);
-                // const resTracks = await axios.get("http://localhost:3000/api/albums/" + albumId + "/songs");
-                console.log("artist", resAlbum.data.data);
-                setArtistData(resAlbum.data.data || null);
-                // setAlbumTracks(resTracks.data.data || null);
+                const resArtist = await axios.get("http://localhost:3000/api/artists/" + artistId);
+                const resArtistAlbums = await axios.get("http://localhost:3000/api/artists/" + artistId + "/albums");
+                setArtistAlbums(resArtistAlbums.data.data || []);
+                setArtistData(resArtist.data.data || null);
 
             } catch (err) {
                 console.error("Erreur lors du fetch backend:", err);
@@ -75,7 +74,41 @@ function ArtistDetail() {
         setPosition('left');
     }, []);
 
-    
+    const album_item_variants: Variants = {
+        initial: { opacity: 0, x: 50 },
+        enter: (custom: { index: number }) => ({
+            opacity: 1,
+            x: 0,
+            transition: {
+                delay: custom.index * 0.1 + 0.5,
+                duration: 0.4,
+                ease: [0.76, 0, 0.24, 1]
+            }
+        })
+    };
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const scrollPosition = e.currentTarget.scrollLeft;
+        // Si on dépasse 5px, on passe à true, sinon false
+        if (scrollPosition > 5 && !albumsHasScrolled) {
+            setAlbumsHasScrolled(true);
+        } else if (scrollPosition <= 5 && albumsHasScrolled) {
+            setAlbumsHasScrolled(false);
+        }
+    };
+
+    const openAlbum = (album: Album) => {
+    localStorage.setItem("albumOnTransition", "true");
+
+    navigate(`/albums/${album.id_album}`, {
+        state: {
+            coverArt: `/assets/medias/${album.cover_art}`,
+            prevId: album.id_album
+        }
+    });
+}
+
+
     return (
         <div className='artist-detail-container'>
             <button className='back-button' onClick={() => {
@@ -96,18 +129,11 @@ function ArtistDetail() {
                     >{dateToReadable(artistData?.date_of_birth || '')}</motion.h4>
                 </div>
 
-                {/* <motion.h3
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.4 }}>
-                    {albumData?.artist_name || 'Unknown Artist'}
-                </motion.h3> */}
-
                 <motion.img
                     src={finalCoverSrc}
                     alt="Artist cover"
 
-                    layoutId={`artist-cover-${artistId}${layoutIndex ? `-${layoutIndex}` : ''}`} 
+                    layoutId={`artist-cover-${artistId}${layoutIndex ? `-${layoutIndex}` : ''}`}
                     layout
 
                     initial={!isOnTransition ? { scale: 0.8, opacity: 1, skewY: -5, skewX: 10 } : false}
@@ -126,75 +152,53 @@ function ArtistDetail() {
                     transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1], delay: 0.5 }}
                 >© 2025 SpotiLike. All rights reserved.</motion.span>
             </div>
-            {/* <div className='album-detail-right'>
-                <div className='album-detail-genres-container'>
-                    <div className='album-detail-genres-container'>
-                        {allGenres.map((genre: Genre, index: number) => (
-                            <motion.div
-                                className='album-detail-genre-item'
-                                key={genre.id_genre}
-                                style={{
-                                    backgroundColor: genreFilter && genreFilter.length > 0 && genreFilter.find(g => g.id_genre === genre.id_genre) ? '#1ed75fc3' : 'rgb(81, 81, 81)'
-                                }}
-                                custom={{ index, rotate: randomRotations[index] }}
-                                variants={album_genre_item_variants}
-                                animate="enter"
-                                initial="initial"
-                                whileHover={{ scale: 0.9, rotate: (randomRotations[index] / 2) }}
-                                onClick={() => toggleGenreFilter(genre)}
-                            >
-                                <img src={`/assets/genres/rock.svg`} alt={genre.title} />
-                                <span>{genre.title}</span>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-                <section className='album-detail-right-scroll-section' >
+            <div className='artist-detail-right'>
+                <section className='artist-detail-right-scroll-section' >
                     <motion.h3
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: 0.5 }}
-                    >About this album</motion.h3>
+                    >About this artist</motion.h3>
                     <motion.p
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: 0.6 }}
                     >
-                        {albumData?.artist_bio || 'No description available for this album.'}
+                        {artistData?.biography || 'No description available for this album.'}
                     </motion.p>
                     <motion.h3
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: 0.7 }}
-                    >Tracks</motion.h3>
-                    <div className='album-detail-tracks-container'>
-                        {filteredTracks && filteredTracks.map((track, index) => (
-                            <React.Fragment key={index}>
-                                <motion.div
-                                    className='album-detail-track-item'
-                                    custom={index}
-                                    variants={track_variants}
-                                    initial="initial"
-                                    animate="enter"
-                                    onClick={() => changeTrack(track.title + ' - ' + albumData!.artist_name)}
-                                >
-                                    <span className='title'>{track.title}</span>
-                                    {<span>spining logo</span>}
-                                    <span>{secondsToMinutes(track.duration)}</span>
-                                </motion.div>
-                                {index < filteredTracks.length - 1 && <motion.div
-                                    className='track-separator'
-                                    custom={index}
-                                    variants={track_separator_variants}
-                                    initial="initial"
-                                    animate="enter"
-                                />}
+                    >Albums</motion.h3>
+                    <div
+                        className={`artist-album-container ${albumsHasScrolled ? 'is-scrolled' : ''}`}
+                        onScroll={handleScroll}
+                    >
 
-                            </React.Fragment>
+                        {artistAlbums.map((album: Album, index: number) => (
+                            <motion.div
+                                className='artist-album-item'
+                                key={album.id_album}
+                                custom={{ index }}
+                                variants={album_item_variants}
+                                animate="enter"
+                                initial="initial"
+                                whileHover={{ scale: 0.99 }}
+                                onClick={() => openAlbum(album)}
+                            >
+                                <motion.img
+                                    layoutId={`album-cover-${album.id_album}`}
+                                    layout
+                                    src={`/assets/medias/${album.cover_art}`}
+                                    alt={album.title}
+                                />
+                                <span>{album.title}</span>
+                            </motion.div>
                         ))}
                     </div>
                 </section>
-            </div> */}
+            </div>
         </div >
     );
 }

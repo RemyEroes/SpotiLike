@@ -13,7 +13,7 @@
 //       GROUP BY a.id
 //       ORDER BY a.nom
 //     `);
-    
+
 //     res.json({
 //       success: true,
 //       data: artistes
@@ -31,7 +31,7 @@
 // export const getArtistById = async (req: Request, res: Response): Promise<void> => {
 //   try {
 //     const { id } = req.params;
-    
+
 //     const [artistes] = await pool.query<Artiste[]>(`
 //       SELECT a.*, 
 //              COUNT(DISTINCT al.id) as nb_albums,
@@ -42,7 +42,7 @@
 //       WHERE a.id = ?
 //       GROUP BY a.id
 //     `, [id]);
-    
+
 //     if (artistes.length === 0) {
 //       res.status(404).json({
 //         success: false,
@@ -50,7 +50,7 @@
 //       });
 //       return;
 //     }
-    
+
 //     res.json({
 //       success: true,
 //       data: artistes[0]
@@ -68,7 +68,7 @@
 // export const getArtistSongs = async (req: Request, res: Response): Promise<void> => {
 //   try {
 //     const { id } = req.params;
-    
+
 //     // Vérifier que l'artiste existe
 //     const [artistes] = await pool.query<Artiste[]>('SELECT id FROM artiste WHERE id = ?', [id]);
 //     if (artistes.length === 0) {
@@ -78,7 +78,7 @@
 //       });
 //       return;
 //     }
-    
+
 //     const [morceaux] = await pool.query<Morceau[]>(`
 //       SELECT m.*, 
 //              al.titre as album_titre,
@@ -92,7 +92,7 @@
 //       GROUP BY m.id
 //       ORDER BY al.date_sortie DESC, m.id
 //     `, [id]);
-    
+
 //     res.json({
 //       success: true,
 //       data: morceaux
@@ -111,7 +111,7 @@
 //   try {
 //     const { id } = req.params;
 //     const { nom, avatar, biographie } = req.body;
-    
+
 //     // Vérifier que l'artiste existe
 //     const [artistes] = await pool.query<Artiste[]>('SELECT * FROM artiste WHERE id = ?', [id]);
 //     if (artistes.length === 0) {
@@ -121,15 +121,15 @@
 //       });
 //       return;
 //     }
-    
+
 //     // Construire la requête de mise à jour dynamique
 //     const updates: string[] = [];
 //     const values: any[] = [];
-    
+
 //     if (nom !== undefined) { updates.push('nom = ?'); values.push(nom); }
 //     if (avatar !== undefined) { updates.push('avatar = ?'); values.push(avatar); }
 //     if (biographie !== undefined) { updates.push('biographie = ?'); values.push(biographie); }
-    
+
 //     if (updates.length === 0) {
 //       res.status(400).json({
 //         success: false,
@@ -137,10 +137,10 @@
 //       });
 //       return;
 //     }
-    
+
 //     values.push(id);
 //     await pool.query(`UPDATE artiste SET ${updates.join(', ')} WHERE id = ?`, values);
-    
+
 //     res.json({
 //       success: true,
 //       message: 'Artiste mis à jour avec succès'
@@ -159,7 +159,7 @@
 // export const deleteArtist = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
 //   try {
 //     const { id } = req.params;
-    
+
 //     // Vérifier que l'artiste existe
 //     const [artistes] = await pool.query<Artiste[]>('SELECT id FROM artiste WHERE id = ?', [id]);
 //     if (artistes.length === 0) {
@@ -169,7 +169,7 @@
 //       });
 //       return;
 //     }
-    
+
 //     // 1. Supprimer les associations genre des morceaux des albums de l'artiste
 //     await pool.query(`
 //       DELETE mg FROM morceau_genre mg
@@ -177,20 +177,20 @@
 //       INNER JOIN album al ON m.album_id = al.id
 //       WHERE al.artiste_id = ?
 //     `, [id]);
-    
+
 //     // 2. Supprimer les morceaux des albums de l'artiste
 //     await pool.query(`
 //       DELETE m FROM morceau m
 //       INNER JOIN album al ON m.album_id = al.id
 //       WHERE al.artiste_id = ?
 //     `, [id]);
-    
+
 //     // 3. Supprimer les albums de l'artiste
 //     await pool.query('DELETE FROM album WHERE artiste_id = ?', [id]);
-    
+
 //     // 4. Supprimer l'artiste
 //     await pool.query('DELETE FROM artiste WHERE id = ?', [id]);
-    
+
 //     res.json({
 //       success: true,
 //       message: 'Artiste et tous ses éléments associés supprimés avec succès'
@@ -220,7 +220,7 @@ export const getAllArtists = async (req: Request, res: Response): Promise<void> 
       GROUP BY a.id_artist
       ORDER BY a.name
     `);
-    
+
     res.json({ success: true, data: artists });
   } catch (error) {
     console.error('Erreur getAllArtists:', error);
@@ -232,19 +232,18 @@ export const getAllArtists = async (req: Request, res: Response): Promise<void> 
 export const getArtistById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    
+
     const [artists] = await pool.query<Artist[]>(`
       SELECT a.*
       FROM ARTISTS a
       WHERE a.id_artist = ?
     `, [id]);
-    console.log(artists);
-    
+
     if (artists.length === 0) {
       res.status(404).json({ success: false, error: 'Artiste non trouvé' });
       return;
     }
-    
+
     res.json({ success: true, data: artists[0] });
   } catch (error) {
     console.error('Erreur getArtistById:', error);
@@ -256,13 +255,13 @@ export const getArtistById = async (req: Request, res: Response): Promise<void> 
 export const getArtistSongs = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    
+
     const [artists] = await pool.query<Artist[]>('SELECT id_artist FROM ARTISTS WHERE id_artist = ?', [id]);
     if (artists.length === 0) {
       res.status(404).json({ success: false, error: 'Artiste non trouvé' });
       return;
     }
-    
+
     // Jointures: Artist -> Performs -> Tracks -> Contains -> Album
     const [tracks] = await pool.query<Track[]>(`
       SELECT t.*, 
@@ -279,11 +278,37 @@ export const getArtistSongs = async (req: Request, res: Response): Promise<void>
       GROUP BY t.id_track
       ORDER BY al.release_date DESC, t.id_track
     `, [id]);
-    
+
     res.json({ success: true, data: tracks });
   } catch (error) {
     console.error('Erreur getArtistSongs:', error);
     res.status(500).json({ success: false, error: 'Erreur récupération morceaux artiste' });
+  }
+};
+
+// GET /api/artists/:id/albums
+export const getArtistAlbums = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const [artists] = await pool.query<Artist[]>('SELECT id_artist FROM ARTISTS WHERE id_artist = ?', [id]);
+    if (artists.length === 0) {
+      res.status(404).json({ success: false, error: 'Artiste non trouvé' });
+      return;
+    }
+
+    const [tracks] = await pool.query<Track[]>(`
+      SELECT a.*
+      FROM ALBUMS AS a
+      JOIN CREATES AS c ON c.id_album = a.id_album
+      WHERE c.id_artist = ?
+      ORDER BY a.release_date DESC
+    `, [id]);
+
+    res.json({ success: true, data: tracks });
+  } catch (error) {
+    console.error('Erreur getArtistAlbums:', error);
+    res.status(500).json({ success: false, error: 'Erreur récupération albums artiste' });
   }
 };
 
@@ -292,25 +317,25 @@ export const updateArtist = async (req: Request, res: Response): Promise<void> =
   try {
     const { id } = req.params;
     const { name, avatar, biography } = req.body;
-    
+
     const [artists] = await pool.query<Artist[]>('SELECT * FROM ARTISTS WHERE id_artist = ?', [id]);
     if (artists.length === 0) {
       res.status(404).json({ success: false, error: 'Artiste non trouvé' });
       return;
     }
-    
+
     const updates: string[] = [];
     const values: any[] = [];
-    
+
     if (name !== undefined) { updates.push('name = ?'); values.push(name); }
     if (avatar !== undefined) { updates.push('avatar = ?'); values.push(avatar); }
     if (biography !== undefined) { updates.push('biography = ?'); values.push(biography); }
-    
+
     if (updates.length > 0) {
-        values.push(id);
-        await pool.query(`UPDATE ARTISTS SET ${updates.join(', ')} WHERE id_artist = ?`, values);
+      values.push(id);
+      await pool.query(`UPDATE ARTISTS SET ${updates.join(', ')} WHERE id_artist = ?`, values);
     }
-    
+
     res.json({ success: true, message: 'Artiste mis à jour' });
   } catch (error) {
     console.error('Erreur updateArtist:', error);
@@ -322,36 +347,36 @@ export const updateArtist = async (req: Request, res: Response): Promise<void> =
 export const deleteArtist = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    
+
     // Le ON DELETE CASCADE en base de données gère la suppression des liens dans CREATES, PERFORMS, PICTURES.
     // Cependant, si on veut supprimer les albums créés par cet artiste :
-    
+
     // 1. Récupérer les albums de l'artiste
     const [albums] = await pool.query<any[]>('SELECT id_album FROM CREATES WHERE id_artist = ?', [id]);
-    
-    if (albums.length > 0) {
-        const albumIds = albums.map(a => a.id_album);
-        
-        // 2. Supprimer les morceaux de ces albums (optionnel, selon règle métier, ici on nettoie)
-        // On récupère les tracks de ces albums
-        const [tracks] = await pool.query<any[]>('SELECT id_track FROM CONTAINS WHERE id_album IN (?)', [albumIds]);
-        if(tracks.length > 0) {
-             const trackIds = tracks.map(t => t.id_track);
-             await pool.query('DELETE FROM TRACKS WHERE id_track IN (?)', [trackIds]);
-        }
 
-        // 3. Supprimer les albums
-        await pool.query('DELETE FROM ALBUMS WHERE id_album IN (?)', [albumIds]);
+    if (albums.length > 0) {
+      const albumIds = albums.map(a => a.id_album);
+
+      // 2. Supprimer les morceaux de ces albums (optionnel, selon règle métier, ici on nettoie)
+      // On récupère les tracks de ces albums
+      const [tracks] = await pool.query<any[]>('SELECT id_track FROM CONTAINS WHERE id_album IN (?)', [albumIds]);
+      if (tracks.length > 0) {
+        const trackIds = tracks.map(t => t.id_track);
+        await pool.query('DELETE FROM TRACKS WHERE id_track IN (?)', [trackIds]);
+      }
+
+      // 3. Supprimer les albums
+      await pool.query('DELETE FROM ALBUMS WHERE id_album IN (?)', [albumIds]);
     }
-    
+
     // 4. Supprimer l'artiste
     const [result] = await pool.query<ResultSetHeader>('DELETE FROM ARTISTS WHERE id_artist = ?', [id]);
-    
+
     if (result.affectedRows === 0) {
-        res.status(404).json({ success: false, error: 'Artiste non trouvé' });
-        return;
+      res.status(404).json({ success: false, error: 'Artiste non trouvé' });
+      return;
     }
-    
+
     res.json({ success: true, message: 'Artiste et ses oeuvres supprimés' });
   } catch (error) {
     console.error('Erreur deleteArtist:', error);

@@ -106,22 +106,24 @@
             font-weight: 200;
             font-size: 12px;
             display: block;
-            margin-left: 10px;
+            width: 100%;
+            text-align: center;
         }
     }
 
-    .album-detail-right {
+    .artist-detail-right {
         flex-grow: 1;
         height: 100%;
         overflow: hidden;
 
-        .album-detail-genres-container {
-            display: flex;
-            gap: 25px;
+        .artist-album-container {
             max-width: 100%;
+            display: flex;
+            gap: 20px;
             overflow-x: scroll;
+            height: fit-content;
 
-            // cacher scrollbar  
+            // cacher scrollbar
             scrollbar-width: none;
             -ms-overflow-style: none;
 
@@ -129,70 +131,60 @@
                 display: none;
             }
 
+
             //degradé pour indiquer qu'on peut scroller
-            &::after {
+            &::after,
+            &::before {
                 content: "";
                 position: absolute;
-                right: 10%;
                 width: 30px;
-                height: 100px;
+                height: 230px;
                 pointer-events: none;
+                z-index: 10;
+            }
+
+            &::after {
+                right: 10%;
                 background: linear-gradient(90deg, rgba(36, 36, 36, 0) 0%, rgb(36, 36, 36) 100%);
             }
 
+            &::before {
+                right: auto;
+                background: linear-gradient(-90deg, rgba(36, 36, 36, 0) 0%, rgb(36, 36, 36) 100%);
+                opacity: 0;
+                transform: translateX(-30px);
+                transition: all 0.3s ease;
+            }
 
-            .album-detail-genre-item {
-                padding: 15px;
-                font-size: 14px;
-                font-weight: 300;
-                height: 70px;
-                aspect-ratio: 1/1;
+            &.is-scrolled::before {
+                transition: all 0.3s ease;
+                transform: translateX(0px);
+                opacity: 1;
+            }
 
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
 
-                background-color: rgb(81, 81, 81);
 
-                /* Remplace l'URL par le chemin de ton fichier SVG */
-                mask-image: url('/assets/album-shape.svg');
-                -webkit-mask-image: url('/assets/album-shape.svg');
-                /* Pour Safari/Chrome */
-
-                /* Pour que la forme remplisse bien le carré */
-                mask-size: contain;
-                -webkit-mask-size: contain;
-
-                /* Pour ne pas répéter la forme */
-                mask-repeat: no-repeat;
-                -webkit-mask-repeat: no-repeat;
-
-                /* Centrer la forme */
-                mask-position: center;
-                -webkit-mask-position: center;
-
-                user-select: none;
-
-                cursor: pointer;
-
+            .artist-album-item {
 
                 img {
-                    width: 30px;
-                    height: 30px;
-                    margin-bottom: 10px;
+                    width: 200px;
+                    aspect-ratio: 1/1;
+                    cursor: pointer;
                 }
 
                 span {
                     color: white;
-                    font-size: 14px;
+                    opacity: 0.5;
+                    font-size: 12px;
                     font-weight: 600;
                     text-transform: uppercase;
                 }
             }
         }
 
-        .album-detail-right-scroll-section {
+
+
+        .artist-detail-right-scroll-section {
             height: calc(100vh - max(100px, 7%) - 100px - 40px);
             margin-top: 15px;
             overflow-y: scroll;
@@ -223,11 +215,7 @@
                 font-size: 25px;
                 font-weight: 800;
 
-                // position: sticky;
-                // top: 0;
-                // background-color: var(--color-background-gray);
-                // background: linear-gradient(0deg, rgba(36, 36, 36, 0) 0%, rgba(36, 36, 36, 0.7) 5%, rgb(36, 36, 36,0.9) 15%, rgb(36, 36, 36) 20%, rgb(36, 36, 36) 100%);
-                &:nth-of-type(2) {
+                &:nth-of-type(1) {
                     color: var(--color-green);
                 }
             }
@@ -239,54 +227,6 @@
                 text-align: justify;
             }
 
-
-            .album-detail-tracks-container {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-
-
-                .album-detail-track-item {
-                    width: 100%;
-                    padding: 7px 15px;
-                    box-sizing: border-box;
-                    display: flex;
-                    align-items: center;
-
-                    gap: 10px;
-                    border-radius: 3px;
-                    cursor: pointer;
-                    color: white;
-
-                    &:hover {
-                        background-color: #1fd35e21;
-                    }
-
-                    .title {
-                        width: 40%;
-                    }
-
-                    span:last-child {
-                        margin-left: auto;
-                        font-variant-numeric: tabular-nums;
-                        /* Bonus: aligne bien les chiffres */
-                    }
-
-                    span:nth-child(2):not(:last-child) {
-                        opacity: 0.7;
-                        font-size: 0.9em;
-                        color: #ccc;
-                    }
-                }
-
-                .track-separator {
-                    height: 0.5px;
-                    background-color: rgba(255, 255, 255, 0.1);
-                    margin: 5px auto;
-                    /* Raccourci pour margin top/bottom 5 et auto gauche/droite */
-                    width: 90%;
-                }
-            }
         }
     }
 }
