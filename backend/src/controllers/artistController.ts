@@ -83,11 +83,10 @@ export const getArtistAlbums = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Récupérer les albums créés par l'artiste
     const albums = await prisma.albums.findMany({
       where: {
         artists: {
-          some: { id_artist: Number(id) } // Relation Creates
+          some: { id_artist: Number(id) }
         }
       },
       orderBy: {
@@ -103,27 +102,35 @@ export const getArtistAlbums = async (req: Request, res: Response): Promise<void
 };
 
 // PUT /api/artists/:id
-export const updateArtist = async (req: Request, res: Response): Promise<void> => {
+export const updateArtist = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { name, avatar, biography } = req.body;
+
+    const artist = await prisma.artists.findUnique({
+      where: { id_artist: Number(id) },
+    });
+    if (!artist) {
+      res.status(404).json({ success: false, error: 'Artiste avec ' + id + ' non trouvé' });
+      return;
+    }
     
-    const dataToUpdate: any = {};
-    if (name !== undefined) dataToUpdate.name = name;
-    if (avatar !== undefined) dataToUpdate.avatar = avatar;
-    if (biography !== undefined) dataToUpdate.biography = biography;
+    const updatedArtist: any = {};
+    if (name !== undefined) updatedArtist.name = name;
+    if (avatar !== undefined) updatedArtist.avatar = avatar;
+    if (biography !== undefined) updatedArtist.biography = biography;
     
     try {
       await prisma.artists.update({
         where: { id_artist: Number(id) },
-        data: dataToUpdate,
+        data: updatedArtist,
       });
     } catch (e) {
-      res.status(404).json({ success: false, error: 'Artiste non trouvé' });
+      res.status(500).json({ success: false, error: 'Erreur lors de la mise à jour de l\'artiste' });
       return;
     }
     
-    res.json({ success: true, message: 'Artiste mis à jour' });
+    res.json({ success: true, message: 'Artiste ' + id + ' mis à jour' });
   } catch (error) {
     console.error('Erreur updateArtist:', error);
     res.status(500).json({ success: false, error: 'Erreur mise à jour artiste' });
@@ -142,43 +149,41 @@ export const deleteArtist = async (req: AuthenticatedRequest, res: Response): Pr
         return;
     }
 
-    // Transaction pour reproduire la logique de suppression en cascade spécifique
-    // (Supprimer l'artiste + ses albums + les tracks de ses albums)
-    // await prisma.$transaction(async (tx) => {
-    //     // 1. Récupérer les IDs des albums créés par l'artiste (table CREATES)
-    //     const albumsToDelete = await tx.creates.findMany({
-    //         where: { id_artist: artistId },
-    //         select: { id_album: true }
-    //     });
-        
-    //     const albumIds = albumsToDelete.map(a => a.id_album);
+    
+    await prisma.$transaction(async (tx: any) => {
+        // albums a delete
+        const albumsToDelete = await tx.creates.findMany({
+            where: { id_artist: artistId },
+            select: { id_album: true }
+        });
+        const albumIds = albumsToDelete.map((a: any) => a.id_album);
 
-    //     if (albumIds.length > 0) {
-    //         // 2. Récupérer les tracks contenues dans ces albums (table CONTAINS)
-    //         const tracksToDelete = await tx.contains.findMany({
-    //             where: { id_album: { in: albumIds } },
-    //             select: { id_track: true }
-    //         });
-    //         const trackIds = tracksToDelete.map(t => t.id_track);
+        if (albumIds.length > 0) {
+            // tracks a delete
+            const tracksToDelete = await tx.contains.findMany({
+                where: { id_album: { in: albumIds } },
+                select: { id_track: true }
+            });
+            const trackIds = tracksToDelete.map((t: any) => t.id_track);
 
-    //         // 3. Supprimer ces Tracks
-    //         if (trackIds.length > 0) {
-    //             await tx.tracks.deleteMany({
-    //                 where: { id_track: { in: trackIds } }
-    //             });
-    //         }
+            // suppresion tracks artiste
+            if (trackIds.length > 0) {
+                await tx.tracks.deleteMany({
+                    where: { id_track: { in: trackIds } }
+                });
+            }
 
-    //         // 4. Supprimer ces Albums
-    //         await tx.albums.deleteMany({
-    //             where: { id_album: { in: albumIds } }
-    //         });
-    //     }
+            // suppresion ablums artiste
+            await tx.albums.deleteMany({
+                where: { id_album: { in: albumIds } }
+            });
+        }
 
-    //     // 5. Supprimer l'Artiste (Cascade DB supprimera Performs, Creates, Pictures liés)
-    //     await tx.artists.delete({
-    //         where: { id_artist: artistId }
-    //     });
-    // });
+        // suppresion artiste
+        await tx.artists.delete({
+            where: { id_artist: artistId }
+        });
+    });
     
     res.json({ success: true, message: 'Artiste et ses oeuvres supprimés' });
   } catch (error) {

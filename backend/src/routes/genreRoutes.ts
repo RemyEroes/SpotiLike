@@ -4,6 +4,7 @@ import {
   getGenreById,
   updateGenre
 } from '../controllers/genreController';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
@@ -14,6 +15,6 @@ router.get('/', getAllGenres);
 router.get('/:id', getGenreById);
 
 // PUT /api/genres/:id - Modifier un genre
-router.put('/:id', updateGenre);
+router.put('/:id', authenticateToken, updateGenre);
 
 export default router;

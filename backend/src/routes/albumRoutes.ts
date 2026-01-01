@@ -22,13 +22,13 @@ router.get('/:id', getAlbumById);
 router.get('/:id/songs', getAlbumSongs);
 
 // POST /api/albums - Créer un album
-router.post('/', createAlbum);
+router.post('/', authenticateToken, createAlbum);
 
 // POST /api/albums/:id/songs - Ajouter un morceau
-router.post('/:id/songs', addSongToAlbum);
+router.post('/:id/songs', authenticateToken, addSongToAlbum);
 
 // PUT /api/albums/:id - Modifier un album
-router.put('/:id', updateAlbum);
+router.put('/:id', authenticateToken, updateAlbum);
 
 // DELETE /api/albums/:id - Supprimer un album (auth requise)
 router.delete('/:id', authenticateToken, deleteAlbum);

@@ -24,7 +24,7 @@ router.get('/:id/songs', getArtistSongs);
 router.get('/:id/albums', getArtistAlbums);
 
 // PUT /api/artists/:id - Modifier un artiste
-router.put('/:id', updateArtist);
+router.put('/:id', authenticateToken, updateArtist);
 
 // DELETE /api/artists/:id - Supprimer un artiste (auth requise, cascade)
 router.delete('/:id', authenticateToken, deleteArtist);

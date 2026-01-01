@@ -1,18 +1,13 @@
 import { Request, Response } from 'express';
+import prisma from '../config/prisma';
+import { AuthenticatedRequest } from '../types';
 import pool from '../config/database';
 import { Genre } from '../types';
 
 // GET /api/genres
 export const getAllGenres = async (req: Request, res: Response): Promise<void> => {
   try {
-    const [genres] = await pool.query<Genre[]>(`
-      SELECT g.*, 
-             COUNT(DISTINCT c.id_track) as nb_tracks
-      FROM GENRES g
-      LEFT JOIN CLASSIFIES c ON g.id_genre = c.id_genre
-      GROUP BY g.id_genre
-      ORDER BY g.title
-    `);
+    const genres = await prisma.genres.findMany({});
 
     res.json({ success: true, data: genres });
   } catch (error) {
@@ -26,21 +21,16 @@ export const getGenreById = async (req: Request, res: Response): Promise<void> =
   try {
     const { id } = req.params;
 
-    const [genres] = await pool.query<Genre[]>(`
-      SELECT g.*, 
-             COUNT(DISTINCT c.id_track) as nb_tracks
-      FROM GENRES g
-      LEFT JOIN CLASSIFIES c ON g.id_genre = c.id_genre
-      WHERE g.id_genre = ?
-      GROUP BY g.id_genre
-    `, [id]);
+    const genre = await prisma.genres.findUnique({
+      where: { id_genre: Number(id) },
+    });
 
-    if (genres.length === 0) {
+    if (!genre) {
       res.status(404).json({ success: false, error: 'Genre non trouvé' });
       return;
     }
 
-    res.json({ success: true, data: genres[0] });
+    res.json({ success: true, data: genre });
   } catch (error) {
     console.error('Erreur getGenreById:', error);
     res.status(500).json({ success: false, error: 'Erreur récupération genre' });
@@ -48,29 +38,34 @@ export const getGenreById = async (req: Request, res: Response): Promise<void> =
 };
 
 // PUT /api/genres/:id
-export const updateGenre = async (req: Request, res: Response): Promise<void> => {
+export const updateGenre = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { title, description } = req.body;
 
-    const [genres] = await pool.query<Genre[]>('SELECT * FROM GENRES WHERE id_genre = ?', [id]);
-    if (genres.length === 0) {
-      res.status(404).json({ success: false, error: 'Genre non trouvé' });
+    if (!title && !description) {
+      res.status(400).json({ success: false, error: 'Au moins un champ (title ou description) doit être fourni pour la mise à jour' });
       return;
     }
 
-    const updates: string[] = [];
-    const values: any[] = [];
-
-    if (title !== undefined) { updates.push('title = ?'); values.push(title); }
-    if (description !== undefined) { updates.push('description = ?'); values.push(description); }
-
-    if (updates.length > 0) {
-      values.push(id);
-      await pool.query(`UPDATE GENRES SET ${updates.join(', ')} WHERE id_genre = ?`, values);
+    const genre = await prisma.genres.findUnique({
+      where: { id_genre: Number(id) },
+    });
+    if (!genre) {
+      res.status(404).json({ success: false, error: 'Genre avec ' + id + ' non trouvé' });
+      return;
     }
 
-    res.json({ success: true, message: 'Genre mis à jour' });
+    // Update genre
+    await prisma.genres.update({
+      where: { id_genre: Number(id) },
+      data: {
+        title: title ?? genre.title,
+        description: description ?? genre.description,
+      },
+    });
+
+    res.json({ success: true, message: 'Genre ' + id + ' mis à jour' });
   } catch (error) {
     console.error('Erreur updateGenre:', error);
     res.status(500).json({ success: false, error: 'Erreur mise à jour genre' });

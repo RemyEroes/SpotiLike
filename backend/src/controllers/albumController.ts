@@ -83,7 +83,7 @@ export const getAlbumSongs = async (req: Request, res: Response): Promise<void> 
 };
 
 // POST /api/albums
-export const createAlbum = async (req: Request, res: Response): Promise<void> => {
+export const createAlbum = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { title, cover_art, release_date, id_artist } = req.body;
 
@@ -92,23 +92,20 @@ export const createAlbum = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Vérifier l'artiste
     const artist = await prisma.artists.findUnique({
       where: { id_artist: Number(id_artist) },
     });
-
     if (!artist) {
       res.status(404).json({ success: false, error: 'Artiste non trouvé' });
       return;
     }
 
-    // Créer l'album ET le lien avec l'artiste (Creates) en une seule transaction
+    // creer album et lier a l'artiste
     const newAlbum = await prisma.albums.create({
       data: {
         title,
         cover_art: cover_art || null,
         release_date: release_date ? new Date(release_date) : new Date(),
-        // Création de la relation dans la table CREATES
         artists: {
           create: {
             artist: {
@@ -125,7 +122,7 @@ export const createAlbum = async (req: Request, res: Response): Promise<void> =>
         ...newAlbum,
         id_artist,
       },
-      message: 'Album créé avec succès'
+      message: 'Album ' + newAlbum.id_album + ' créé avec succès'
     });
   } catch (error) {
     console.error('Erreur createAlbum:', error);
@@ -134,9 +131,9 @@ export const createAlbum = async (req: Request, res: Response): Promise<void> =>
 };
 
 // POST /api/albums/:id/songs
-export const addSongToAlbum = async (req: Request, res: Response): Promise<void> => {
+export const addSongToAlbum = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { id } = req.params; // id_album
+    const { id } = req.params; // id de l'album
     const { title, duration, id_genres } = req.body;
 
     if (!title) {
@@ -146,11 +143,11 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
 
     const albumId = Number(id);
 
-    // Vérifier l'album
+    // get album and its artist
     const album = await prisma.albums.findUnique({
       where: { id_album: albumId },
       include: {
-        artists: true, // Pour récupérer l'artiste lié à l'album
+        artists: true, 
       },
     });
 
@@ -159,16 +156,14 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Récupérer l'ID de l'artiste (via la table Creates incluse ci-dessus)
     const artistId = album.artists[0]?.id_artist || null;
 
-    // Préparer les données pour Prisma
-    // On crée la Track, et en même temps on remplit Contains, Performs et Classifies
+    // creation track et relations
     const newTrack = await prisma.tracks.create({
       data: {
         title,
-        duration: duration || 0,
-        // 1. Lien avec l'Album (CONTAINS)
+        duration: parseInt(duration) || 0,
+        // lien album tracks (CONTAINS)
         albums: {
           create: {
             album: {
@@ -176,7 +171,7 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
             },
           },
         },
-        // 2. Lien avec l'Artiste (PERFORMS), seulement si on a trouvé un artiste
+        // lien artiste tracks (PERFORMS)
         artists: artistId ? {
           create: {
             is_main_artist: true,
@@ -185,7 +180,7 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
             },
           },
         } : undefined,
-        // 3. Liens avec les Genres (CLASSIFIES)
+        // genre
         genres: (id_genres && Array.isArray(id_genres) && id_genres.length > 0) ? {
           create: id_genres.map((genreId: number) => ({
             genre: {
@@ -203,7 +198,7 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
         id_album: albumId,
         id_genres,
       },
-      message: 'Morceau ajouté avec succès'
+      message: 'Morceau ' + newTrack.id_track + ' ajouté avec succès à l\'album ' + albumId,
     });
   } catch (error) {
     console.error('Erreur addSongToAlbum:', error);
@@ -212,30 +207,36 @@ export const addSongToAlbum = async (req: Request, res: Response): Promise<void>
 };
 
 // PUT /api/albums/:id
-export const updateAlbum = async (req: Request, res: Response): Promise<void> => {
+export const updateAlbum = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { title, cover_art, release_date } = req.body;
 
-    // On prépare l'objet de données dynamiquement
-    const dataToUpdate: any = {};
-    if (title !== undefined) dataToUpdate.title = title;
-    if (cover_art !== undefined) dataToUpdate.cover_art = cover_art;
-    if (release_date !== undefined) dataToUpdate.release_date = new Date(release_date);
-
-    // Prisma lance une erreur si l'ID n'existe pas, donc on englobe dans try/catch
-    try {
-      await prisma.albums.update({
-        where: { id_album: Number(id) },
-        data: dataToUpdate,
-      });
-    } catch (e) {
-      // Code erreur Prisma pour "Record not found"
+    const album = await prisma.albums.findUnique({
+      where: { id_album: Number(id) },
+    });
+    if (!album) {
       res.status(404).json({ success: false, error: 'Album non trouvé' });
       return;
     }
 
-    res.json({ success: true, message: 'Album mis à jour' });
+    const updatedAlbum: any = {};
+    if (title !== undefined) updatedAlbum.title = title;
+    if (cover_art !== undefined) updatedAlbum.cover_art = cover_art;
+    if (release_date !== undefined) updatedAlbum.release_date = new Date(release_date);
+
+
+    try {
+      await prisma.albums.update({
+        where: { id_album: Number(id) },
+        data: updatedAlbum,
+      });
+    } catch (e) {
+      res.status(500).json({ success: false, error: 'Erreur lors de la mise à jour de l\'album' });
+      return;
+    }
+
+    res.json({ success: true, message: 'Album ' + id + ' mis à jour' });
   } catch (error) {
     console.error('Erreur updateAlbum:', error);
     res.status(500).json({ success: false, error: 'Erreur mise à jour album' });
@@ -248,28 +249,23 @@ export const deleteAlbum = async (req: AuthenticatedRequest, res: Response): Pro
     const { id } = req.params;
     const albumId = Number(id);
 
-    // Vérifier si l'album existe
     const album = await prisma.albums.findUnique({
       where: { id_album: albumId }
     });
-
     if (!album) {
       res.status(404).json({ success: false, error: 'Album non trouvé' });
       return;
     }
 
-    // Logique de suppression complexe : Supprimer les tracks qui sont dans cet album
-    // 1. Trouver les tracks de cet album
-    const tracksToDelete = await prisma.contains.findMany({
+    const albumTracksToDelete = await prisma.contains.findMany({
       where: { id_album: albumId },
       select: { id_track: true }
     });
+    const trackIds = albumTracksToDelete.map((t: any) => t.id_track);
 
-    const trackIds = tracksToDelete.map(t => t.id_track);
-
-    // Utilisation d'une transaction pour s'assurer que tout est supprimé ou rien
-    await prisma.$transaction(async (tx) => {
-      // 2. Supprimer les Tracks (Cascade supprimera Performs, Classifies, Contains liés)
+    
+    // suppression tracks et album dans une transaction (cascade)
+    await prisma.$transaction(async (tx: any) => {
       if (trackIds.length > 0) {
         await tx.tracks.deleteMany({
           where: {
@@ -278,11 +274,11 @@ export const deleteAlbum = async (req: AuthenticatedRequest, res: Response): Pro
         });
       }
 
-      // 3. Supprimer l'album (Cascade supprimera Creates, Contains, Pictures liés)
       await tx.albums.delete({
         where: { id_album: albumId }
       });
     });
+
 
     res.json({ success: true, message: 'Album et ses morceaux supprimés' });
   } catch (error) {
