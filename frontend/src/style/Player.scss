@@ -1,6 +1,6 @@
 @import './colors.css';
 
-.player{
+.player {
     background-color: var(--color-green-darker);
     position: fixed;
 
@@ -17,7 +17,7 @@
     padding: 0 20px;
     box-sizing: border-box;
 
-    .play-pause-button{
+    .play-pause-button {
         height: 90%;
         aspect-ratio: 1/1;
 
@@ -30,35 +30,42 @@
         align-items: center;
         cursor: pointer;
 
-        img{
+        img {
             height: 80%;
             aspect-ratio: 1/1;
             object-fit: contain;
 
-            &#pause-icon{
+            &#pause-icon {
                 height: 75%;
             }
         }
 
     }
 
-    .player-track-info{
+    .player-track-info {
         display: flex;
         flex-grow: 1;
     }
 
-    .player-buttons{
+    .player-buttons {
         height: 90%;
         display: flex;
         justify-content: end;
         align-items: center;
         gap: 15px;
 
-        img{
+
+        img {
             height: 60%;
             object-fit: contain;
 
-            &#player-close{
+            // play next (first img)
+            &:nth-of-type(1) {
+                cursor: not-allowed;
+            }
+
+
+            &#player-close {
                 height: 40%;
             }
         }

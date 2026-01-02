@@ -224,7 +224,7 @@ function AlbumDetail() {
         setPosition('left');
     }, []);
 
-    const { setCurrentTrack, setIsPlaying } = useContext(PlayerContext);
+    const { currentTrack, setCurrentTrack, isPlaying, setIsPlaying } = useContext(PlayerContext);
 
     const changeTrack = (trackTitle: string) => {
         localStorage.setItem('player-currentTrack', trackTitle);
@@ -340,6 +340,9 @@ function AlbumDetail() {
                             <Fragment key={index}>
                                 <motion.div
                                     className='album-detail-track-item'
+                                    style={{
+                                        backgroundColor: currentTrack === (track.title + ' - ' + albumData!.artist?.name) ? 'rgba(30, 215, 117, 0.3)' : 'transparent'
+                                    }}
                                     custom={index}
                                     variants={track_variants}
                                     initial="initial"
@@ -347,7 +350,9 @@ function AlbumDetail() {
                                     onClick={() => changeTrack(track.title + ' - ' + albumData!.artist?.name)}
                                 >
                                     <span className='title'>{track.title}</span>
-                                    {<span>spining logo</span>}
+                                    { currentTrack === (track.title + ' - ' + albumData!.artist?.name) && 
+                                        <img id="spinning-logo" className={`${isPlaying ? 'spinning' : ''}`} src="/spotilike.svg" alt="Spinning logo" />
+                                        }
                                     <span>{secondsToMinutes(track.duration)}</span>
                                 </motion.div>
                                 {index < filteredTracks.length - 1 && <motion.div

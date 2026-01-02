@@ -275,6 +275,7 @@
                     width: 100%;
                     padding: 7px 15px;
                     box-sizing: border-box;
+                    height: 40px;
                     display: flex;
                     align-items: center;
 
@@ -288,7 +289,8 @@
                     }
 
                     .title {
-                        width: 40%;
+                        width: 60%;
+                        margin-right: 20%;
                     }
 
                     span:last-child {
@@ -302,6 +304,28 @@
                         font-size: 0.9em;
                         color: #ccc;
                     }
+
+                    #spinning-logo {
+                        height: 30px;
+                        aspect-ratio: 1/1;
+                        animation: spin 3s linear infinite;
+                        animation-play-state: paused;
+
+                        &.spinning {
+                            animation-play-state: running;
+                        }
+                    }
+
+                    @keyframes spin {
+                        from {
+                            transform: rotate(0deg);
+                        }
+
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
+
                 }
 
                 .track-separator {
