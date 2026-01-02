@@ -98,15 +98,15 @@ function ArtistDetail() {
     };
 
     const openAlbum = (album: Album) => {
-    localStorage.setItem("albumOnTransition", "true");
+        localStorage.setItem("albumOnTransition", "true");
 
-    navigate(`/albums/${album.id_album}`, {
-        state: {
-            coverArt: `/assets/medias/${album.cover_art}`,
-            prevId: album.id_album
-        }
-    });
-}
+        navigate(`/albums/${album.id_album}`, {
+            state: {
+                coverArt: `/assets/medias/${album.cover_art}`,
+                prevId: album.id_album
+            }
+        });
+    }
 
 
     return (
@@ -135,6 +135,11 @@ function ArtistDetail() {
 
                     layoutId={`artist-cover-${artistId}${layoutIndex ? `-${layoutIndex}` : ''}`}
                     layout
+
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/assets/medias/avatars/default_artist.png';
+
+                    }}
 
                     initial={!isOnTransition ? { scale: 0.8, opacity: 1, skewY: -5, skewX: 10 } : false}
                     animate={!isOnTransition ? { scale: 1, opacity: 1, skewY: 0, skewX: 0 } : false}
@@ -191,6 +196,9 @@ function ArtistDetail() {
                                     layoutId={`album-cover-${album.id_album}`}
                                     layout
                                     src={`/assets/medias/${album.cover_art}`}
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/assets/medias/default_album.svg'
+                                    }}
                                     alt={album.title}
                                 />
                                 <span>{album.title}</span>
