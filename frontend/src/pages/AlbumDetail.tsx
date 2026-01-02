@@ -310,7 +310,7 @@ function AlbumDetail() {
                                     whileHover={{ scale: 0.9, rotate: (randomRotations[index] / 2) }}
                                     onClick={() => toggleGenreFilter(genre)}
                                 >
-                                    <img src={`/assets/genres/rock.svg`} alt={genre.title} />
+                                    <img src={`/assets/genres/${genre.title.toLowerCase().replace(/\s+/g, '-')}.svg`} alt={genre.title} />
                                     <span>{genre.title}</span>
                                 </motion.div>
                             )
