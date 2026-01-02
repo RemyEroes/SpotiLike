@@ -339,10 +339,7 @@ function AlbumDetail() {
                         {filteredTracks && filteredTracks.map((track, index) => (
                             <Fragment key={index}>
                                 <motion.div
-                                    className='album-detail-track-item'
-                                    style={{
-                                        backgroundColor: currentTrack === (track.title + ' - ' + albumData!.artist?.name) ? 'rgba(30, 215, 117, 0.3)' : 'transparent'
-                                    }}
+                                    className={`album-detail-track-item ${currentTrack === (track.title + ' - ' + albumData!.artist?.name) ? 'active' : ''}`}
                                     custom={index}
                                     variants={track_variants}
                                     initial="initial"

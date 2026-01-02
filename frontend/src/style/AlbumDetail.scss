@@ -290,7 +290,8 @@
                     cursor: pointer;
                     color: white;
 
-                    &:hover {
+                    &:hover,
+                    &.active {
                         background-color: #1fd35e21;
                     }
 
