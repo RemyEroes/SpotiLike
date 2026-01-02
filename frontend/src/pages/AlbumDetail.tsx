@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { motion, type Variants } from 'framer-motion';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
 import axios from "axios";
 import { useState, useContext, useEffect, useMemo, Fragment } from 'react';
@@ -81,7 +81,7 @@ function AlbumDetail() {
 
                 // format data
                 const album: Album = resAlbum.data.data;
-                album.artist = album.artists[0]?.artist;   
+                album.artist = album.artists[0]?.artist;
 
                 setAlbumData(album || null);
                 setAlbumTracks(resTracks.data.data || null);
@@ -103,13 +103,15 @@ function AlbumDetail() {
 
         setFilteredTracks(null);
 
-        const filtered = albumTracks?.filter(track =>
-            track.genres.some(genre =>
-                genreFilter.some(filterGenre => filterGenre.id_genre === genre.id_genre)
-            )
-        ) || null;
+        setTimeout(() => {
+            const filtered = albumTracks?.filter(track =>
+                track.genres.some(genre =>
+                    genreFilter.some(filterGenre => filterGenre.id_genre === genre.id_genre)
+                )
+            ) || null;
 
-        setFilteredTracks(filtered);
+            setFilteredTracks(filtered);
+        }, 50);
 
     }, [genreFilter, albumTracks]);
 
@@ -336,6 +338,14 @@ function AlbumDetail() {
                         transition={{ duration: 0.3, delay: 0.7 }}
                     >Tracks</motion.h3>
                     <div className='album-detail-tracks-container'>
+                        <AnimatePresence>
+                        {filteredTracks === null &&
+                            <motion.div 
+                                exit={{ y: -20, opacity: 0 }}
+                                transition={{ duration: 0.5, ease: [0.7, 0, 0.84, 0], delay: 0.5 }}
+                            className='loading-tracks'>Loading tracks...</motion.div>
+                        }
+                        </AnimatePresence>
                         {filteredTracks && filteredTracks.map((track, index) => (
                             <Fragment key={index}>
                                 <motion.div
@@ -347,9 +357,9 @@ function AlbumDetail() {
                                     onClick={() => changeTrack(track.title + ' - ' + albumData!.artist?.name)}
                                 >
                                     <span className='title'>{track.title}</span>
-                                    { currentTrack === (track.title + ' - ' + albumData!.artist?.name) && 
+                                    {currentTrack === (track.title + ' - ' + albumData!.artist?.name) &&
                                         <img id="spinning-logo" className={`${isPlaying ? 'spinning' : ''}`} src="/spotilike.svg" alt="Spinning logo" />
-                                        }
+                                    }
                                     <span>{secondsToMinutes(track.duration)}</span>
                                 </motion.div>
                                 {index < filteredTracks.length - 1 && <motion.div
