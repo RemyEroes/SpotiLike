@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import '../style/ArtistDetail.scss';
 import axios from "axios";
 import React, { useState, useContext, useEffect } from 'react';

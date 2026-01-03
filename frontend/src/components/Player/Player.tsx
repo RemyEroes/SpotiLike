@@ -1,12 +1,12 @@
-import React, { use, useContext, useEffect } from 'react'
-import { AnimatePresence, motion, scale, type Variants } from 'framer-motion'
+import { useContext, } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { PlayerContext } from '../../context/PlayerContext.tsx'
 import '../../style/Player.scss'
 import PlayPauseButton from './PlayPauseButton.tsx';
 
 function Player() {
 
-    const { isPlaying, setIsPlaying, currentTrack, setCurrentTrack, position, setPosition, closePlayer } = useContext(PlayerContext);
+    const { currentTrack, position, closePlayer } = useContext(PlayerContext);
 
     const initial = {
         left: '50%',
