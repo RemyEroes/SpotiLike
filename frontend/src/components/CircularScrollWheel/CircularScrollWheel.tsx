@@ -263,7 +263,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                             <div className={`${type}-title`}>
                                 <motion.h2
                                     data-text={titleInfo.title.length > 20
-                                        ? titleInfo.title.slice(0, 20) + "..."
+                                        ? titleInfo.title.slice(0, 20).split(" ").slice(0, -1).join(" ") + "..."
                                         : titleInfo.title}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -271,7 +271,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                                     transition={{ type: 'spring', stiffness: 100, delay: 0.1 }}
                                 >
                                     {titleInfo.title.length > 20
-                                        ? titleInfo.title.slice(0, 20) + "..."
+                                        ? titleInfo.title.slice(0, 20).split(" ").slice(0, -1).join(" ") + "..."
                                         : titleInfo.title}
                                 </motion.h2>
 
