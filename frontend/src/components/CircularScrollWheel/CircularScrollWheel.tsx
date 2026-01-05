@@ -92,6 +92,17 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                         setDuplicatedArtists(true);
                     }
                     const randomizedItems = fetchedItems.sort(() => 0.5 - Math.random()).slice(0, 24);
+
+                    if (localStorage.getItem("artistToCenterOnBack")) {
+                        const artistIdToCenter = parseInt(localStorage.getItem("artistToCenterOnBack") || "0", 10);
+                        const indexToCenter = randomizedItems.findIndex((item: Artist) => item.id_artist === artistIdToCenter);
+                        // mettre en premier l'artiste à centrer
+                        if (indexToCenter !== -1) {
+                            const itemToCenter = randomizedItems.splice(indexToCenter, 1)[0];
+                            randomizedItems.unshift(itemToCenter);
+                        }
+                    }
+                    localStorage.removeItem("albumToCenterOnBack");
                     setItems(randomizedItems || []);
                 }
 
