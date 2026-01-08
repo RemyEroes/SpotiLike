@@ -2,7 +2,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
 import axios from "axios";
-import { useState, useContext, useEffect, useMemo, Fragment } from 'react';
+import { useState, useContext, useEffect, useMemo, Fragment, use } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
 
@@ -67,6 +67,7 @@ function AlbumDetail() {
     const [filteredTracks, setFilteredTracks] = useState<Track[] | null>(null);
     const [genreFilter, setGenreFilter] = useState<Genre[] | null>(null);
     const [genres, setGenres] = useState<Genre[] | null>(null);
+    const [onTransition, setOnTransition] = useState<boolean>(localStorage.getItem("albumOnTransition") === "true");
 
     const initialCoverArt = location.state?.coverArt;
 
@@ -115,6 +116,13 @@ function AlbumDetail() {
 
     }, [genreFilter, albumTracks]);
 
+    useEffect(() => {
+        setTimeout(() => {
+            localStorage.setItem("albumOnTransition", "false");
+            setOnTransition(false);
+        }, 800);
+    }, []);
+
     const toggleGenreFilter = (genre: Genre) => {
         if (!genreFilter) {
             setGenreFilter([genre]);
@@ -146,8 +154,6 @@ function AlbumDetail() {
     }, [albumTracks]);
 
     const finalCoverSrc = albumData?.cover_art ? `/assets/medias/${albumData.cover_art}` : initialCoverArt;
-
-    const isOnTransition = localStorage.getItem("albumOnTransition") === "true";
 
     const randomRotations = useMemo(() => {
         if (!genres) return [];
@@ -278,8 +284,8 @@ function AlbumDetail() {
                     layoutId={`album-cover-${albumId}`}
                     layout
 
-                    initial={!isOnTransition ? { scale: 0.8, opacity: 1, skewY: -5, skewX: 10 } : false}
-                    animate={!isOnTransition ? { scale: 1, opacity: 1, skewY: 0, skewX: 0 } : false}
+                    initial={!onTransition ? { scale: 0.8, opacity: 1, skewY: -5, skewX: 10 } : false}
+                    animate={!onTransition ? { scale: 1, opacity: 1, skewY: 0, skewX: 0 } : false}
 
                     transition={{
                         duration: 0.6,

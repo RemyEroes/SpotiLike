@@ -31,6 +31,7 @@ function ArtistDetail() {
     const [artistData, setArtistData] = useState<Artist | null>(null);
     const [artistAlbums, setArtistAlbums] = useState<Album[]>([]);
     const [albumsHasScrolled, setAlbumsHasScrolled] = useState(false);
+    const [onTransition, setOnTransition] = useState<boolean>(localStorage.getItem("artistOnTransition") === "true");
 
 
     const initialCoverArt = location.state?.avatar;
@@ -55,11 +56,15 @@ function ArtistDetail() {
 
     }, [artistId]);
 
+    useEffect(() => {
+        setTimeout(() => {
+            localStorage.setItem("artistOnTransition", "false");
+            setOnTransition(false);
+        }, 800);
+    }, []);
+
 
     const finalCoverSrc = artistData?.avatar ? `/assets/medias/avatars/${artistData.avatar}` : initialCoverArt;
-
-    const isOnTransition = localStorage.getItem("artistOnTransition") === "true";
-
 
     const dateToReadable = (dateStr: string): string => {
         const date = new Date(dateStr);
@@ -141,8 +146,8 @@ function ArtistDetail() {
 
                     }}
 
-                    initial={!isOnTransition ? { scale: 0.8, opacity: 1, skewY: -5, skewX: 10 } : false}
-                    animate={!isOnTransition ? { scale: 1, opacity: 1, skewY: 0, skewX: 0 } : false}
+                    initial={!onTransition ? { scale: 0.8, opacity: 1, skewY: -5, skewX: 10 } : false}
+                    animate={!onTransition ? { scale: 1, opacity: 1, skewY: 0, skewX: 0 } : false}
 
                     transition={{
                         duration: 0.6,
