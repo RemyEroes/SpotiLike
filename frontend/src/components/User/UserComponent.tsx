@@ -21,7 +21,7 @@ function UserComponent() {
                 {isLoggedIn && <span className="username">{username?.[0] || "G"}</span>}
             </motion.div>
 
-            <UserNav showNav={showNav} setShowNav={setShowNav} />
+            <UserNav showNav={showNav} />
         </div>
     )
 }

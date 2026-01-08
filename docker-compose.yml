@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=/api
+    image: spotilike-front
+    container_name: spotilike_front
+    restart: always
+    networks:
+      - spotilike_net
+    ports:
+      - "8080:80" 
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    image: spotilike-back
+    container_name: spotilike_back
+    restart: always
+    expose:
+      - "3400"
+    env_file:
+      - ./backend/.env
+    networks:
+      - spotilike_net
+
+networks:
+  spotilike_net:
+    driver: bridge

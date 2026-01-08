@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LoggedContext } from '../../context/LoggedContext.tsx'
 import '../../style/User.scss'
 
-function UserNav({ showNav, setShowNav }: { showNav: boolean; setShowNav: (show: boolean) => void }) {
+function UserNav({ showNav }: { showNav: boolean }) {
     const { isLoggedIn, setIsLoggedIn } = useContext(LoggedContext);
 
     const initialStyle = { opacity: 0, y: -10, scale: 0.8 };

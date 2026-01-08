@@ -2,7 +2,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import '../style/AlbumDetail.scss';
 import axios from "axios";
-import { useState, useContext, useEffect, useMemo, Fragment, use } from 'react';
+import { useState, useContext, useEffect, useMemo, Fragment } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
 
@@ -77,8 +77,8 @@ function AlbumDetail() {
             if (!albumId) return;
 
             try {
-                const resAlbum = await axios.get("http://localhost:3000/api/albums/" + albumId);
-                const resTracks = await axios.get("http://localhost:3000/api/albums/" + albumId + "/songs");
+                const resAlbum = await axios.get(`${import.meta.env.VITE_API_URL}/albums/` + albumId);
+                const resTracks = await axios.get(`${import.meta.env.VITE_API_URL}/albums/` + albumId + "/songs");
 
                 // format data
                 const album: Album = resAlbum.data.data;

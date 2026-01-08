@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,11 +40,11 @@ app.use((req: Request, res: Response) => {
 const startServer = async () => {
   // Tester la connexion MySQL
   const dbConnected = await testConnection();
-  
+
   if (!dbConnected) {
     console.warn('⚠️  La connexion MySQL a échoué. L\'API démarre quand même...');
   }
-  
+
   app.listen(PORT, () => {
     console.log();
   });

@@ -58,7 +58,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                 let url = "";
                 let res;
                 if (type === "album") {
-                    url = "http://localhost:3000/api/albums";
+                    url = `${import.meta.env.VITE_API_URL}/albums`;
                     res = await axios.get(url);
 
                     // format data
@@ -82,7 +82,7 @@ function CircularScrollWheel({ type = "album" }: { type?: "album" | "artist" }) 
                     localStorage.removeItem("albumToCenterOnBack");
                     setItems(randomizedItems || []);
                 } else if (type === "artist") {
-                    url = "http://localhost:3000/api/artists";
+                    url = `${import.meta.env.VITE_API_URL}/artists`;
                     res = await axios.get(url);
 
                     // randomize items and take 24 (or duplicates if less than 24)

@@ -43,8 +43,8 @@ function ArtistDetail() {
             if (!artistId) return;
 
             try {
-                const resArtist = await axios.get("http://localhost:3000/api/artists/" + artistId);
-                const resArtistAlbums = await axios.get("http://localhost:3000/api/artists/" + artistId + "/albums");
+                const resArtist = await axios.get(`${import.meta.env.VITE_API_URL}/artists/` + artistId);
+                const resArtistAlbums = await axios.get(`${import.meta.env.VITE_API_URL}/artists/` + artistId + "/albums");
                 setArtistAlbums(resArtistAlbums.data.data || []);
                 setArtistData(resArtist.data.data || null);
 
