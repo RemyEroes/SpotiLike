@@ -28,6 +28,8 @@ services:
       - ./backend/.env
     networks:
       - spotilike_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   spotilike_net:
